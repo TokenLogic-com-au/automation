@@ -40,6 +40,10 @@ import {
     Optimism = 10,
     Polygon = 137,
     PolygonZkEvm = 1101,
+    Scroll = 534352,
+    ZkSync = 324,
+    Metis = 1088,
+    Linea = 59144,
   }
   
   const MIN_USD_VALUE_FOR_CLAIM = 10_000_000_000n;
@@ -159,6 +163,26 @@ import {
       dataProvider: "0x501B4c19dd9C2e06E94dA7b6D5Ed4ddA013EC741",
       priceOracle: "0x3e652E97ff339B73421f824F5b03d75b62F1Fb51",
     },
+    [Network.Scroll]: {
+      feeClaimer: "0x9abf798f5314BFd793A9E57A654BEd35af4A1D60",
+      dataProvider: "0x7F23D86Ee20D869112572136221e173428DD740B",
+      priceOracle: "0x54586bE62E3c3580375aE3723C145253060Ca0C2",
+    },
+    [Network.ZkSync]: {
+      feeClaimer: "0x9abf798f5314BFd793A9E57A654BEd35af4A1D60",
+      dataProvider: "0x7F23D86Ee20D869112572136221e173428DD740B",
+      priceOracle: "0x54586bE62E3c3580375aE3723C145253060Ca0C2",
+    },
+    [Network.Metis]: {
+      feeClaimer: "0x9abf798f5314BFd793A9E57A654BEd35af4A1D60",
+      dataProvider: "0x7F23D86Ee20D869112572136221e173428DD740B",
+      priceOracle: "0x54586bE62E3c3580375aE3723C145253060Ca0C2",
+    },
+    [Network.Linea]: {
+      feeClaimer: "0x9abf798f5314BFd793A9E57A654BEd35af4A1D60",
+      dataProvider: "0x7F23D86Ee20D869112572136221e173428DD740B",
+      priceOracle: "0x54586bE62E3c3580375aE3723C145253060Ca0C2",
+    },
   };
   
   const gelatoRelay = new GelatoRelay();
@@ -224,7 +248,7 @@ import {
         }
   
         const usdValue =
-          (claimableBalances[i].toBigInt() * tokenPrices[i].toBigInt()) 
+          (claimableBalances[i].toBigInt() * tokenPrices[i].toBigInt()) /
           BigInt(10) ** BigInt(tokenDecimal);
   
         console.log(chainId, tokenAddresses[i], usdValue);
@@ -235,7 +259,7 @@ import {
       }
     }
   
-    if (claimableTokens.length > 1) {
+    if (claimableTokens.length) {
       const result = await gelatoRelay.sponsoredCall(
         {
           chainId: BigInt(chainId),
@@ -360,7 +384,7 @@ import {
         "nextIndex",
         ((nextIndex + 1) % chainIds.length).toString()
       );
-      return { canExec: false, message: "Not claimable time" };
+      return { canExec: false, message: "Minimum time between claims not reached" };
     }
   
     const result = await claimFees(
@@ -382,6 +406,6 @@ import {
   
     return {
       canExec: false,
-      message: "Success!",
+      message: "Successfully claimed tokens",
     };
   });
