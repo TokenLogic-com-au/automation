@@ -69,8 +69,6 @@ The bot interacts with these contracts:
 
 1. **ParaSwap Fee Claimer**:
 
-   - `batchGetClaimable()`: Checks claimable amounts
-   - `claimToCollector()`: Claims single asset fees
    - `batchClaimToCollector()`: Claims multiple assets at once
 
 2. **Aave Data Provider**:
@@ -93,10 +91,10 @@ The bot interacts with these contracts:
 
 The bot provides clear status messages:
 
-- "Sponsor Api Key not configured" if missing API key
-- "Not claimable time" if cooldown hasn't elapsed
+- "Sponsor API Key not configured" if missing API key
+- "Minimum time between claims not reached" if cooldown hasn't elapsed
 - Logs chain ID, asset address and USD value for claimable assets
-- "Succeed!" after successful execution
+- "Successfully claimed tokens" after successful execution
 
 ## Optimization Notes
 

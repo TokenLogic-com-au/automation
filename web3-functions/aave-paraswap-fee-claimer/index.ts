@@ -20,15 +20,6 @@ import {
   
   type ReserveConfigurationData = {
     decimals: BigNumber;
-    ltv: BigNumber;
-    liquidationThreshold: BigNumber;
-    liquidationBonus: BigNumber;
-    reserveFactor: BigNumber;
-    usageAsCollateralEnabled: boolean;
-    borrowingEnabled: boolean;
-    stableBorrowRateEnabled: boolean;
-    isActive: boolean;
-    isFrozen: boolean;
   };
   
   enum Network {
@@ -64,14 +55,7 @@ import {
       outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
       stateMutability: "view",
       type: "function",
-    },
-    {
-      inputs: [{ internalType: "contract IERC20", name: "asset", type: "address" }],
-      name: "claimToCollector",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
+    }
   ];
   
   const AAVE_DATA_PROVIDER_ABI = [
@@ -396,3 +380,4 @@ import {
       message: "Successfully claimed tokens",
     };
   });
+  
