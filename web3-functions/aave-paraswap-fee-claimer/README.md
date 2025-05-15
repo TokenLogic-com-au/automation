@@ -24,7 +24,10 @@ The bot currently supports these chains:
 - BSC (56)
 - Optimism (10)
 - Polygon (137)
-- Polygon zkEVM (1101)
+- Scroll (534352)
+- zkSync Era (324)
+- Metis (1088)
+- Linea (59144)
 
 ## Configuration
 
@@ -55,7 +58,7 @@ The bot requires these configuration parameters:
 3. **Claim Execution**:
 
    - For assets worth ≥ $100:
-     - Claims all eligible assets in a single batch using `batchClaimToCollector`
+     - Uses `batchClaimToCollector` to claim all eligible assets in a single transaction
    - Uses Gelato Relay for sponsored transaction execution
 
 4. **State Update**:
@@ -69,6 +72,7 @@ The bot interacts with these contracts:
 
 1. **ParaSwap Fee Claimer**:
 
+   - `batchGetClaimable()`: Checks claimable amounts
    - `batchClaimToCollector()`: Claims multiple assets at once
 
 2. **Aave Data Provider**:
@@ -93,8 +97,8 @@ The bot provides clear status messages:
 
 - "Sponsor API Key not configured" if missing API key
 - "Minimum time between claims not reached" if cooldown hasn't elapsed
-- Logs chain ID, asset address and USD value for claimable assets
 - "Successfully claimed tokens" after successful execution
+- "No claimable tokens found!" if no tokens meet the minimum value threshold
 
 ## Optimization Notes
 
