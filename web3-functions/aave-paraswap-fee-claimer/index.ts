@@ -46,7 +46,7 @@ import {
     Linea = 59144,
   }
   
-  const MIN_USD_VALUE_FOR_CLAIM = 10_000_000_000n;
+  const MIN_USD_VALUE_FOR_CLAIM = 100_000_000_000_000_000_000n;
   const MAX_RPC_CALLS_PER_UPDATE = 5;
   const MAX_RPC_CALLS_PER_CLAIM = 2;
   
@@ -267,19 +267,6 @@ import {
           data: feeClaimerContract.interface.encodeFunctionData(
             "batchClaimToCollector",
             [claimableTokens]
-          ),
-        },
-        relayApiKey
-      );
-      console.log(result);
-    } else if (claimableTokens.length === 1) {
-      const result = await gelatoRelay.sponsoredCall(
-        {
-          chainId: BigInt(chainId),
-          target: networkAddresses.feeClaimer,
-          data: feeClaimerContract.interface.encodeFunctionData(
-            "claimToCollector",
-            [claimableTokens[0]]
           ),
         },
         relayApiKey

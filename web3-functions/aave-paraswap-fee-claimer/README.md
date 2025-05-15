@@ -55,8 +55,7 @@ The bot requires these configuration parameters:
 3. **Claim Execution**:
 
    - For assets worth ≥ $100:
-     - Single asset: Calls `claimToCollector`
-     - Multiple assets: Calls `batchClaimToCollector`
+     - Claims all eligible assets in a single batch using `batchClaimToCollector`
    - Uses Gelato Relay for sponsored transaction execution
 
 4. **State Update**:
