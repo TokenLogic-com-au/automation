@@ -51,7 +51,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const lastExecutionTime = Number((await storage.get("lastExecutionTime")) ?? "0");
   const currentTimestamp = Date.now();
 
-  const gelatoApiKey = 'FpXloc43d1v8Zamp70ciJ4_HWQMmzVoSTr_5RnoCOKs_'
+  const gelatoApiKey = await secrets.get("RELAY_API_KEY");
   if (!gelatoApiKey) {
     return { canExec: false, message: "Gelato Relay API Key not configured" };
   }
