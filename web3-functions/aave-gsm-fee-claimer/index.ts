@@ -5,6 +5,7 @@ import {
 import { Contract } from "@ethersproject/contracts";
 import { GelatoRelay } from "@gelatonetwork/relay-sdk";
 
+
 const MIN_FEE_THRESHOLD_WEI = 100_000_000_000_000_000_000n;
 
 type GSMAbiInput = {
@@ -50,7 +51,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const lastExecutionTime = Number((await storage.get("lastExecutionTime")) ?? "0");
   const currentTimestamp = Date.now();
 
-  const gelatoApiKey = await secrets.get("RELAY_API_KEY");
+  const gelatoApiKey = 'FpXloc43d1v8Zamp70ciJ4_HWQMmzVoSTr_5RnoCOKs_'
   if (!gelatoApiKey) {
     return { canExec: false, message: "Gelato Relay API Key not configured" };
   }
@@ -97,6 +98,8 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
       console.error(`Error distributing fees for GSM ${gsmContractAddress}:`, error);
     }
   }
+
+  await new Promise((res) => setTimeout(res, 2000)); 
 
   if (anyExecuted) {
     await storage.set("lastExecutionTime", currentTimestamp.toString());
