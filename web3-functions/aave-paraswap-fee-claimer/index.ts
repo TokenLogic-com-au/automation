@@ -326,7 +326,9 @@ import {
     };
   
     const nextIndex = Number((await storage.get("nextIndex")) ?? "0");
-    let tokenDecimals = JSON.parse((await storage.get("decimals")) ?? "{}");
+    const rawDecimals = await storage.get("decimals");
+    let tokenDecimals: Record<string, number> =
+      typeof rawDecimals === "string" ? JSON.parse(rawDecimals) : {};
   
     const lastExecuted = Number((await storage.get(`${nextIndex}`)) ?? "0");
     const now = Date.now();
