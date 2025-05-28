@@ -5,6 +5,7 @@ import {
 import { Contract } from "@ethersproject/contracts";
 import { GelatoRelay } from "@gelatonetwork/relay-sdk";
 
+
 const MIN_FEE_THRESHOLD_WEI = 100_000_000_000_000_000_000n;
 
 type GSMAbiInput = {
@@ -97,6 +98,8 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
       console.error(`Error distributing fees for GSM ${gsmContractAddress}:`, error);
     }
   }
+
+  await new Promise((res) => setTimeout(res, 2000)); 
 
   if (anyExecuted) {
     await storage.set("lastExecutionTime", currentTimestamp.toString());
