@@ -6,8 +6,12 @@ import { Contract } from "@ethersproject/contracts";
 import { GelatoRelay } from "@gelatonetwork/relay-sdk";
 import { ethers } from "ethers";
 
-import { STEWARD_ABI, AAVE_DATA_PROVIDER_ABI, AAVE_PRICE_ORACLE_ABI } from "./abis";
-import { AAVE_ADDRESSES, SAFE_ADDRESS, SAFE_CHAIN_ID, ERC20_ABI } from "./constants";
+import { STEWARD_ABI, AAVE_DATA_PROVIDER_ABI, AAVE_PRICE_ORACLE_ABI, ERC20_ABI } from "./abis";
+import { AAVE_ADDRESSES, SAFE_ADDRESS, MAINNET_CHAIN_ID } from "./constants";
+
+const propose = async (): Promise<void> => {
+
+}
 
 Web3Function.onRun(async (context: Web3FunctionContext) => {
   const { multiChainProvider, secrets } = context;
@@ -68,7 +72,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const multicallData = stewardInterface.encodeFunctionData("multicall", [encodedCalls]);
 
   const proposeData = stewardInterface.encodeFunctionData("propose", [
-    AAVE_ADDRESSES[SAFE_CHAIN_ID].poolExposureSteward,
+    AAVE_ADDRESSES[MAINNET_CHAIN_ID].poolExposureSteward,
     "0",
     multicallData,
     0
@@ -77,7 +81,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const relay = new GelatoRelay();
 
   await relay.sponsoredCall({
-    chainId: BigInt(SAFE_CHAIN_ID.toString()),
+    chainId: BigInt(MAINNET_CHAIN_ID.toString()),
     target: SAFE_ADDRESS,
     data: proposeData
   }, relayApiKey);
