@@ -1472,7 +1472,17 @@
     path-browserify "^1.0.0"
     url "^0.11.0"
 
-"@safe-global/protocol-kit@^6.0.4":
+"@safe-global/api-kit@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@safe-global/api-kit/-/api-kit-3.0.1.tgz#cea6eb27b33a34568b29ac0507e62714445e35e5"
+  integrity sha512-ks7vFMU3l/xl1TWKL2c+a8l5aQRCtOtSMMpxfJIMsJvtvPSTAUx/WDFKqtVlMhVP/QrqaL7YiTw8hM2vhkTdDQ==
+  dependencies:
+    "@safe-global/protocol-kit" "^6.0.1"
+    "@safe-global/types-kit" "^2.0.0"
+    node-fetch "^2.7.0"
+    viem "^2.21.8"
+
+"@safe-global/protocol-kit@^6.0.1", "@safe-global/protocol-kit@^6.0.4":
   version "6.0.4"
   resolved "https://registry.yarnpkg.com/@safe-global/protocol-kit/-/protocol-kit-6.0.4.tgz#971a45776ab1e4cdd3136515e49e3ad7dfd90c4f"
   integrity sha512-zwUk7qqtdcjgj+PoDziFXU/rIdAJ1sbwSJBJ48EwsRQIUwT0QdNje3xvvAm22gCOVTvOBTwOwECO5koLEJPqSw==
@@ -1555,7 +1565,7 @@
   resolved "https://registry.yarnpkg.com/@safe-global/safe-modules-deployments/-/safe-modules-deployments-2.2.8.tgz#444bd078d8d04f2cac6427ed82608e8e9db314eb"
   integrity sha512-XqRhEUzO8PNs5kCXztlPmQJBZO+YTDCRbiumCr5JBuS8RhU0pRSkG5Gs8qjKlZicxZvy3IdXZ14APVwb6+dj/Q==
 
-"@safe-global/types-kit@^2.0.1":
+"@safe-global/types-kit@^2.0.0", "@safe-global/types-kit@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@safe-global/types-kit/-/types-kit-2.0.1.tgz#f2334a33fa430beceba017bd7dbb112269f61f30"
   integrity sha512-4xKjTBlyFSIKziqvjrGMBAgs7Z2+s/5A2wjAXg2gBA1BuvV6w1THk1Y/WMZg8+6/PlRaVMVo4LoSNMRSsZZhjw==
