@@ -16,4 +16,4 @@ export const AAVE_ADDRESSES: Record<number, AaveAddress> = {
 
 export const MAINNET_CHAIN_ID = 1;
 // export const SAFE_ADDRESS = "0x22740deBa78d5a0c24C58C740e3715ec29de1bFa";
-export const SAFE_ADDRESS = '0xCa5F4CBD4BF398c5a69e2a8005F6047Ab3F78BBf';
+export const SAFE_ADDRESS = '0x2CddF8c22dAFd25559f3301c1dD46F4964C666E6';
