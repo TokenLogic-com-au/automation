@@ -13,13 +13,13 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const relayApiKey = await secrets.get("GELATO_RELAY_API_KEY");
   const sharedSafeAddress = SAFE_ADDRESS;
 
-  const rpcUrls: Record<number, string> = {
-    1: (await secrets.get("RPC_URL_ETHEREUM")) || "",
-    137: (await secrets.get("RPC_URL_POLYGON")) || "",
-    42161: (await secrets.get("RPC_URL_ARBITRUM")) || "",
-    10: (await secrets.get("RPC_URL_OPTIMISM")) || "",
-    8453: (await secrets.get("RPC_URL_BASE")) || "",
-  };
+  const getNetworkKey = (chainId: number): string => ({
+    1: "ETHEREUM",
+    137: "POLYGON",
+    42161: "ARBITRUM",
+    10: "OPTIMISM",
+    8453: "BASE",
+  }[chainId] || "");
 
   if (!relayApiKey || !privateKey || !sharedSafeAddress) {
     return {
@@ -32,8 +32,9 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
 
   for (const [chainIdStr, addresses] of Object.entries(AAVE_ADDRESSES)) {
     const chainId = Number(chainIdStr);
-    const rpcUrl = rpcUrls[chainId];
-
+    const rpcKey = `RPC_URL_${getNetworkKey(chainId)}`;
+    const rpcUrl = (await secrets.get(rpcKey)) || "";
+    const rpcUrls = { [chainId]: rpcUrl };
     const provider = getProvider(chainId, rpcUrls);
 
     if (!provider || !rpcUrl) {

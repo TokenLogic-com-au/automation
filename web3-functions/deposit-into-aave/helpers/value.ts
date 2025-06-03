@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 
+/// @dev Number of decimals used by the Aave Price Oracle
 const PRICE_DECIMALS = 8;
 
 export const calculateUsdValue = (

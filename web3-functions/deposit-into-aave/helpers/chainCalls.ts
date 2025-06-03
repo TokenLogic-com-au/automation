@@ -5,7 +5,7 @@ import { AAVE_ADDRESSES } from "../constants";
 import { calculateUsdValue } from "./value";
 
 /// @notice Minimum token USD value to consider for deposit into Aave V3
-/// @dev Prevents adding low-value tokens to the Safe proposal
+/// @dev Prevents adding low-value tokens (less than $1,000 USD) to the Safe proposal
 const MIN_USD_THRESHOLD = ethers.BigNumber.from(1000);
 
 export async function buildEncodedCalls(
