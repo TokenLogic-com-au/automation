@@ -39,4 +39,3 @@ export const AAVE_ADDRESSES: Record<number, AaveAddress> = {
 };
 
 export const SAFE_ADDRESS = "0x22740deBa78d5a0c24C58C740e3715ec29de1bFa";
-

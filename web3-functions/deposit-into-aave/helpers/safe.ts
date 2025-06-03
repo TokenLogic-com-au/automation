@@ -13,6 +13,7 @@ export async function proposeSafeMulticall(
   data: string
 ) {
   const wallet = new ethers.Wallet(privateKey, provider);
+  const apiKit = new SafeApiKit({ chainId: BigInt(chainId) });
 
   const safeSDK = await Safe.init({
     provider: rpcUrl,
@@ -28,7 +29,6 @@ export async function proposeSafeMulticall(
   };
 
   const safeTx = await safeSDK.createTransaction({ transactions: [safeTransaction] });
-  const apiKit = new SafeApiKit({ chainId: BigInt(chainId) });
   const safeTxHash = await safeSDK.getTransactionHash(safeTx);
   const senderSignature = await safeSDK.signHash(safeTxHash);
 
@@ -40,5 +40,5 @@ export async function proposeSafeMulticall(
     senderSignature: senderSignature.data,
   });
 
-  console.log(`✅ Proposal sent on chain ${chainId} ↳ TxHash: ${safeTxHash}`);
+  console.log(`✅ Proposed transaction to Safe on chain ${chainId} — Tx hash: ${safeTxHash}`);
 }

@@ -4,7 +4,11 @@ import { AAVE_DATA_PROVIDER_ABI, AAVE_PRICE_ORACLE_ABI, ERC20_ABI } from "../abi
 import { AAVE_ADDRESSES } from "../constants";
 import { calculateUsdValue } from "./value";
 
-export async function getEncodedCallsForChain(
+/// @notice Minimum token USD value to consider for deposit into Aave V3
+/// @dev Prevents adding low-value tokens to the Safe proposal
+const MIN_USD_THRESHOLD = ethers.BigNumber.from(1000);
+
+export async function buildEncodedCalls(
   provider: ethers.providers.Provider,
   addresses: typeof AAVE_ADDRESSES[number],
   stewardInterface: ethers.utils.Interface
@@ -34,10 +38,9 @@ export async function getEncodedCallsForChain(
 
     const erc20 = new Contract(token, ERC20_ABI, provider);
     const balance = await erc20.balanceOf(collector);
-
     const valueUsd = calculateUsdValue(balance, price, decimals);
 
-    if (valueUsd.gte(ethers.BigNumber.from(100))) {
+    if (valueUsd.gte(MIN_USD_THRESHOLD)) {
       const depositData = stewardInterface.encodeFunctionData("depositV3", [
         poolExposureSteward,
         token,

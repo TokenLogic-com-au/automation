@@ -1,7 +1,7 @@
 import { Web3Function, Web3FunctionContext } from "@gelatonetwork/web3-functions-sdk";
 import { ethers } from "ethers";
-import { getProviderMap } from "./helpers/providers";
-import { getEncodedCallsForChain } from "./helpers/chainCalls";
+import { getProvider } from "./helpers/providers"; 
+import { buildEncodedCalls } from "./helpers/chainCalls";
 import { proposeSafeMulticall } from "./helpers/safe";
 import { STEWARD_ABI } from "./abis";
 import { AAVE_ADDRESSES, SAFE_ADDRESS } from "./constants";
@@ -28,20 +28,20 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     };
   }
 
-  const providers = getProviderMap(rpcUrls);
   const stewardInterface = new ethers.utils.Interface(STEWARD_ABI);
 
   for (const [chainIdStr, addresses] of Object.entries(AAVE_ADDRESSES)) {
     const chainId = Number(chainIdStr);
-    const provider = providers[chainId];
-    const rpcUrl = rpcUrls[chainId as keyof typeof rpcUrls];
+    const rpcUrl = rpcUrls[chainId];
+
+    const provider = getProvider(chainId, rpcUrls);
 
     if (!provider || !rpcUrl) {
       console.warn(`⚠️ Skipping chain ${chainId}: missing provider or RPC URL`);
       continue;
     }
 
-    const encodedCalls = await getEncodedCallsForChain(provider, addresses, stewardInterface);
+    const encodedCalls = await buildEncodedCalls(provider, addresses, stewardInterface);
     if (!encodedCalls.length) continue;
 
     const multicallData = stewardInterface.encodeFunctionData("multicall", [encodedCalls]);

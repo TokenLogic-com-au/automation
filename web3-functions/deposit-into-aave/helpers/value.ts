@@ -1,5 +1,7 @@
 import { ethers } from "ethers";
 
+const PRICE_DECIMALS = 8;
+
 export const calculateUsdValue = (
     balance: ethers.BigNumber,
     price: ethers.BigNumber,
@@ -8,5 +10,5 @@ export const calculateUsdValue = (
     return price
       .mul(balance)
       .div(ethers.BigNumber.from(10).pow(decimals))
-      .div(ethers.BigNumber.from(10).pow(8));
+      .div(ethers.BigNumber.from(10).pow(PRICE_DECIMALS));
   };

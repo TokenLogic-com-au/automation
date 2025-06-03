@@ -1,10 +1,6 @@
 import { ethers } from "ethers";
 
-export const getProviderMap = (rpcUrls: Record<number, string>) => {
-    const map: Record<number, ethers.providers.JsonRpcProvider> = {};
-    for (const [id, url] of Object.entries(rpcUrls)) {
-      if (url) map[Number(id)] = new ethers.providers.JsonRpcProvider(url);
-    }
-    return map;
-  };
-  
+export const getProvider = (chainId: number, rpcUrls: Record<number, string>): ethers.providers.JsonRpcProvider | null => {
+  const url = rpcUrls[chainId];
+  return url ? new ethers.providers.JsonRpcProvider(url) : null;
+};
