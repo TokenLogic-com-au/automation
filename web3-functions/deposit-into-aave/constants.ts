@@ -32,7 +32,7 @@ export const AAVE_ADDRESSES: Record<number, AaveAddress> = {
   },
   8453: {
     poolExposureSteward: "0x22aC12a6937BBBC0a301AF9154d08EaD95673122",
-    dataProvider: "0x78dc7c9e64a4a6b22615f4FCf0E824906f8a06d9",
+    dataProvider: "0xC4Fcf9893072d61Cc2899C0054877Cb752587981",
     collector: "0x464C71f6c2F760DdA6093dCB91C24c39e5d6e18c",
     priceOracle: "0x2Cc0Fc26eD4563A5ce5e8bdcfe1A2878676Ae156",
   }

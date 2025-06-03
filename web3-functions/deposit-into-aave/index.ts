@@ -1,6 +1,5 @@
 import { Web3Function, Web3FunctionContext } from "@gelatonetwork/web3-functions-sdk";
 import { ethers } from "ethers";
-import { getProvider } from "./helpers/providers"; 
 import { buildEncodedCalls } from "./helpers/chainCalls";
 import { proposeSafeMulticall } from "./helpers/safe";
 import { STEWARD_ABI } from "./abis";
@@ -30,35 +29,50 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
 
   const stewardInterface = new ethers.utils.Interface(STEWARD_ABI);
 
-  for (const [chainIdStr, addresses] of Object.entries(AAVE_ADDRESSES)) {
-    const chainId = Number(chainIdStr);
-    const rpcKey = `RPC_URL_${getNetworkKey(chainId)}`;
-    const rpcUrl = (await secrets.get(rpcKey)) || "";
-    const rpcUrls = { [chainId]: rpcUrl };
-    const provider = getProvider(chainId, rpcUrls);
+  const results = await Promise.allSettled(
+    Object.entries(AAVE_ADDRESSES).map(async ([chainIdStr, addresses]) => {
+      const chainId = Number(chainIdStr);
+      const networkKey = getNetworkKey(chainId);
+      const rpcUrl = (await secrets.get(`RPC_URL_${networkKey}`)) || "";
 
-    if (!provider || !rpcUrl) {
-      console.warn(`⚠️ Skipping chain ${chainId}: missing provider or RPC URL`);
-      continue;
-    }
+      if (!rpcUrl) {
+        console.warn(`⚠️ Skipping chain ${chainId}: missing RPC URL`);
+        return;
+      }
 
-    const encodedCalls = await buildEncodedCalls(provider, addresses, stewardInterface);
-    if (!encodedCalls.length) continue;
+      try {
+        const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
-    const multicallData = stewardInterface.encodeFunctionData("multicall", [encodedCalls]);
-    await proposeSafeMulticall(
-      chainId,
-      provider,
-      rpcUrl,
-      privateKey,
-      sharedSafeAddress,
-      addresses.poolExposureSteward,
-      multicallData
-    );
-  }
+        const encodedCalls = await buildEncodedCalls(provider, addresses, stewardInterface);
+        if (!encodedCalls.length) {
+          console.log(`ℹ️ No encoded calls for chain ${chainId}`);
+          return;
+        }
+
+        const multicallData = stewardInterface.encodeFunctionData("multicall", [encodedCalls]);
+
+        await proposeSafeMulticall(
+          chainId,
+          provider,
+          rpcUrl,
+          privateKey,
+          sharedSafeAddress,
+          addresses.poolExposureSteward,
+          multicallData
+        );
+
+        console.log(`✅ Proposed transaction to Safe on chain ${chainId}`);
+      } catch (error) {
+        console.error(`❌ Error processing chain ${chainId}:`, error);
+      }
+    })
+  );
+
+  const successes = results.filter(r => r.status === "fulfilled").length;
+  const failures = results.filter(r => r.status === "rejected").length;
 
   return {
     canExec: false,
-    message: "📝 Multichain deposit proposals created successfully.",
+    message: `📝 Multichain proposals finished — ✅ ${successes}, ❌ ${failures}`,
   };
 });
