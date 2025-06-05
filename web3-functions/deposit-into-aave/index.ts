@@ -43,7 +43,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
       try {
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
-        const encodedCalls = await buildEncodedCalls(provider, addresses, stewardInterface);
+        const encodedCalls = await buildEncodedCalls(provider, addresses, stewardInterface, chainId);
         if (!encodedCalls.length) {
           console.log(`ℹ️ No encoded calls for chain ${chainId}`);
           return;

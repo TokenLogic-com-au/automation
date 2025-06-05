@@ -28,6 +28,16 @@ w3f-run W3FNAME --logs
 
 This will execute the script and log the output, allowing you to verify its functionality.
 
+## Unit testing
+
+To run unit tests, use the following command:
+
+```bash
+yarn jest
+```
+
+This will execute all the unit tests and display the results in the terminal, allowing you to verify the correctness of the script's functionality.
+
 ## Deployment
 
 To deploy the script, use the following command:
