@@ -41,13 +41,13 @@ jest.mock("@ethersproject/contracts", () => {
           getAssetsPrices: jest.fn().mockResolvedValue([
             ethers.BigNumber.from("1000000000000"), // WETH: $1000e8
             ethers.BigNumber.from("1100000000000"), // WSTETH: $1100e8
-            ethers.BigNumber.from("100000000000"), // DAI: $100e8 ×1000 = $100k > threshold
-            ethers.BigNumber.from("10000000000"), // GHO: $10e8, pero ignorado
+            ethers.BigNumber.from("100000000000"),  // DAI: $100e8 ×1000 = $100k > threshold
+            ethers.BigNumber.from("10000000000"),   // GHO: $10e8, but ignored
           ]),
         };
       }
 
-      // ERC20: balanceOf para la dirección del token
+      // ERC20: balanceOf for the token address
       return {
         balanceOf: jest.fn().mockResolvedValue(
           fakeBalances[lower] ?? ethers.constants.Zero
@@ -151,14 +151,14 @@ describe("proposeSafeMulticall", () => {
   const mockData = "0x1234";
   const mockChainId = 1;
 
-  // Aquí guardamos el spyInstance en walletSpy para restaurarlo luego
+  // Here we save the spyInstance in walletSpy to restore it later
   let walletSpy: jest.SpyInstance;
 
   beforeAll(() => {
     walletSpy = jest
       .spyOn(ethers, "Wallet")
       .mockImplementation((privateKey: any, provider: any) => {
-        // Devuelvo un objeto con address simulado
+        // Return an object with a simulated address
         return { address: "0xFakeWalletAddress" } as any;
       });
   });
@@ -171,7 +171,7 @@ describe("proposeSafeMulticall", () => {
     await expect(
       proposeSafeMulticall(
         mockChainId,
-        {} as any, // provider simulado
+        {} as any, // simulated provider
         mockRpcUrl,
         mockPrivateKey,
         mockSafeAddress,
