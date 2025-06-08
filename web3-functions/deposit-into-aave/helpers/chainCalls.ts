@@ -8,13 +8,13 @@ const MIN_USD_THRESHOLD = ethers.BigNumber.from(1000);
 
 // Ignored tokens
 const IGNORED_TOKENS = new Set([
-  "0x3f3a32b5ee3f858a58b3cc9b69ee65e7b6f72df1".toLowerCase() // GHO
+  "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f".toLowerCase() // GHO
 ]);
 
 // Tokens to deposit into prime pool
 const PRIME_MAINNET_TOKENS = new Set([
   "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".toLowerCase(), // wETH
-  "0x7f39c581f595b53c5cb5bb5985d66ec2a7a6a2d2".toLowerCase()  // wstETH
+  "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0".toLowerCase()  // wstETH
 ]);
 
 export async function buildEncodedCalls(
