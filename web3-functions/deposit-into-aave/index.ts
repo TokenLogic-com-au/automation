@@ -1,7 +1,7 @@
 import { Web3Function, Web3FunctionContext } from "@gelatonetwork/web3-functions-sdk";
 import { ethers } from "ethers";
 import { buildEncodedCalls } from "./helpers/chainCalls";
-import { proposeSafeMulticall } from "./helpers/safe";
+import { executeDepositWithRole } from "./helpers/safe";
 import { STEWARD_ABI } from "./abis";
 import { AAVE_ADDRESSES, SAFE_ADDRESS } from "./constants";
 
@@ -51,17 +51,19 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
 
         const multicallData = stewardInterface.encodeFunctionData("multicall", [encodedCalls]);
 
-        await proposeSafeMulticall(
+        try{
+        await executeDepositWithRole(
           chainId,
           provider,
-          rpcUrl,
           privateKey,
           sharedSafeAddress,
           addresses.poolExposureSteward,
           multicallData
         );
-
-        console.log(`✅ Proposed transaction to Safe on chain ${chainId}`);
+        console.log(`✅ executed transaction on behalf of Safe on chain ${chainId}`);
+        } catch (error) {
+          console.error(`❌ Error processing chain ${chainId}:`, error);
+        }
       } catch (error) {
         console.error(`❌ Error processing chain ${chainId}:`, error);
       }

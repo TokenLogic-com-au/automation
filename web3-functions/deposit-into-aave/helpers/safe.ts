@@ -1,44 +1,42 @@
 import { ethers } from "ethers";
-import { MetaTransactionData, OperationType } from "@safe-global/types-kit";
-import SafeApiKit from "@safe-global/api-kit";
-import Safe from "@safe-global/protocol-kit";
 
-export async function proposeSafeMulticall(
+export async function executeDepositWithRole(
   chainId: number,
   provider: ethers.providers.Provider,
-  rpcUrl: string,
   privateKey: string,
-  safeAddress: string,
-  to: string,
-  data: string
+  rolesModifierAddress: string,
+  target: string,
+  callData: string 
 ) {
   const wallet = new ethers.Wallet(privateKey, provider);
-  const apiKit = new SafeApiKit({ chainId: BigInt(chainId) });
 
-  const safeSDK = await Safe.init({
-    provider: rpcUrl,
-    signer: privateKey,
-    safeAddress,
-  });
+  const roleKey = '0x616176655f6465706f7369746f72000000000000000000000000000000000000';
 
-  const safeTransaction: MetaTransactionData = {
-    to,
-    data,
-    value: "0",
-    operation: OperationType.Call,
-  };
+  const rolesInterface = new ethers.utils.Interface([
+    "function execTransactionWithRole(address,uint256,bytes,uint8,bytes32,bool)",
+  ]);
 
-  const safeTx = await safeSDK.createTransaction({ transactions: [safeTransaction] });
-  const safeTxHash = await safeSDK.getTransactionHash(safeTx);
-  const senderSignature = await safeSDK.signHash(safeTxHash);
+  const rolesData = rolesInterface.encodeFunctionData("execTransactionWithRole", [
+    target, 
+    0,
+    callData,  
+    0,           
+    roleKey,
+    false         
+  ]);
 
-  await apiKit.proposeTransaction({
-    safeAddress,
-    safeTransactionData: safeTx.data,
-    safeTxHash,
-    senderAddress: wallet.address,
-    senderSignature: senderSignature.data,
-  });
+  try {
+    const tx = await wallet.sendTransaction({
+      to: rolesModifierAddress,
+      data: rolesData,
+      value: 0,
+    });
 
-  console.log(`✅ Proposed transaction to Safe on chain ${chainId} — Tx hash: ${safeTxHash}`);
+    await tx.wait();
+    
+    console.log(`✅ Executed with role on chain ${chainId} — Tx hash: ${tx.hash}`);
+  } catch (error) {
+    console.error(`❌ Error executing transacti
+      on on chain ${chainId}:`, error);
+  }
 }
