@@ -28,9 +28,8 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const { secrets } = context;
 
   const privateKey = await secrets.get("PRIVATE_KEY");
-  const sharedSafeAddress = SAFE_ADDRESS;
 
-  if (!privateKey || !sharedSafeAddress) {
+  if (!privateKey || !SAFE_ADDRESS) {
     return {
       canExec: false,
       message: "🔑 Missing required secrets (PRIVATE_KEY, SAFE_ADDRESS)",
@@ -65,7 +64,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
           chainId,
           provider,
           privateKey,
-          sharedSafeAddress,
+          SAFE_ADDRESS,
           addresses.poolExposureSteward,
           multicallData
         );
@@ -73,7 +72,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
         console.log(`✅ Executed transaction on behalf of Safe on chain ${chainId}`);
       } catch (error) {
         console.error(`❌ Error processing chain ${chainId}:`, error instanceof Error ? error.message : error);
-        throw error; // Re-throw to be caught by Promise.allSettled
+        throw error; 
       }
     })
   );
