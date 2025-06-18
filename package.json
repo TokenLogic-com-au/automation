@@ -63,9 +63,6 @@
   "dependencies": {
     "@gelatonetwork/relay-sdk": "^5.5.6",
     "@gelatonetwork/web3-functions-sdk": "2.3.0",
-    "@safe-global/api-kit": "^3.0.1",
-    "@safe-global/protocol-kit": "^6.0.4",
-    "@safe-global/types-kit": "^2.0.1",
     "zksync-web3": "^0.17.1"
   }
 }

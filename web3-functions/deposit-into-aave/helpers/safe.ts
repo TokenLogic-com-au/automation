@@ -1,4 +1,6 @@
 import { ethers } from "ethers";
+import { ROLES_MODIFIER_ABI } from "../abis";
+import { ROLE_KEY as roleKey } from "../constants";
 
 export async function executeDepositWithRole(
   chainId: number,
@@ -6,23 +8,18 @@ export async function executeDepositWithRole(
   privateKey: string,
   rolesModifierAddress: string,
   target: string,
-  callData: string 
-) {
+  callData: string
+): Promise<void> {
   const wallet = new ethers.Wallet(privateKey, provider);
-
-  const roleKey = '0x616176655f6465706f7369746f72000000000000000000000000000000000000';
-
-  const rolesInterface = new ethers.utils.Interface([
-    "function execTransactionWithRole(address,uint256,bytes,uint8,bytes32,bool)",
-  ]);
+  const rolesInterface = new ethers.utils.Interface(ROLES_MODIFIER_ABI);
 
   const rolesData = rolesInterface.encodeFunctionData("execTransactionWithRole", [
-    target, 
+    target,
     0,
-    callData,  
-    0,           
+    callData,
+    0,
     roleKey,
-    false         
+    false
   ]);
 
   try {
@@ -33,10 +30,12 @@ export async function executeDepositWithRole(
     });
 
     await tx.wait();
-    
     console.log(`✅ Executed with role on chain ${chainId} — Tx hash: ${tx.hash}`);
   } catch (error) {
-    console.error(`❌ Error executing transacti
-      on on chain ${chainId}:`, error);
+    if (error instanceof Error) {
+      console.error(`❌ Error executing transaction on chain ${chainId}:`, error.message);
+    } else {
+      console.error(`❌ Error executing transaction on chain ${chainId}:`, error);
+    }
   }
 }

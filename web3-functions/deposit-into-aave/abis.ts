@@ -160,4 +160,8 @@ const ERC20_ABI = [
   },
 ];
 
-export { STEWARD_ABI, AAVE_DATA_PROVIDER_ABI, AAVE_PRICE_ORACLE_ABI, ERC20_ABI };
+const ROLES_MODIFIER_ABI = [
+  "function execTransactionWithRole(address,uint256,bytes,uint8,bytes32,bool)",
+]
+
+export { STEWARD_ABI, AAVE_DATA_PROVIDER_ABI, AAVE_PRICE_ORACLE_ABI, ERC20_ABI, ROLES_MODIFIER_ABI };

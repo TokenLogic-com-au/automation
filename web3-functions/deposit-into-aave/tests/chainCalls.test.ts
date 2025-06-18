@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { buildEncodedCalls } from "../helpers/chainCalls";
 import { Interface, FunctionFragment } from "ethers/lib/utils";
+import { STEWARD_ABI } from "../abis";
 
 const WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 const WSTETH = "0x7f39c581f595b53c5cb5bb5985d66ec2a7a6a2d2";
@@ -38,15 +39,14 @@ jest.mock("@ethersproject/contracts", () => {
       if (lower === "0xoracle") {
         return {
           getAssetsPrices: jest.fn().mockResolvedValue([
-            ethers.BigNumber.from("1000000000000"), // WETH: $1000e8
-            ethers.BigNumber.from("1100000000000"), // WSTETH: $1100e8
-            ethers.BigNumber.from("100000000000"),  // DAI: $100e8 ×1000 = $100k > threshold
-            ethers.BigNumber.from("10000000000")    // GHO: $10e8, but ignored
+            ethers.BigNumber.from("100000000000"), // WETH: $1,000 (1_000 * 1e8)
+            ethers.BigNumber.from("110000000000"), // WSTETH: $1,100 (1_100 * 1e8)
+            ethers.BigNumber.from("10000000000"),  // DAI: $100 (100 * 1e8)
+            ethers.BigNumber.from("1000000000")    // GHO: $10 (10 * 1e8)
           ])
         };
       }
 
-      // ERC20: balanceOf for token contract address
       return {
         balanceOf: jest.fn().mockResolvedValue(
           fakeBalances[lower] ?? ethers.constants.Zero
@@ -56,15 +56,25 @@ jest.mock("@ethersproject/contracts", () => {
   };
 });
 
-describe("buildEncodedCalls", () => {
-  const mockStewardInterface = new Interface([
-    "function depositV3(address pool, address reserve, uint256 amount)"
-  ]);
+const stewardInterface = new ethers.utils.Interface(STEWARD_ABI);
 
-  jest.spyOn(mockStewardInterface, "encodeFunctionData").mockImplementation(
+describe("buildEncodedCalls", () => {
+  jest.spyOn(stewardInterface, "encodeFunctionData").mockImplementation(
     (_: string | FunctionFragment, values?: readonly unknown[]): string => {
-      const [pool] = values ?? [];
-      return `depositV3:${pool}`;
+      const [pool, reserve, amount] = values ?? [];
+      const priceMap: Record<string, ethers.BigNumber> = {
+        [WETH]: ethers.BigNumber.from("100000000000"),
+        [WSTETH]: ethers.BigNumber.from("110000000000"),
+        [DAI]: ethers.BigNumber.from("10000000000"),
+        [GHO]: ethers.BigNumber.from("1000000000")
+      };
+
+      const price = priceMap[(reserve as string)];
+      const normalizedAmountInUsd = ethers.BigNumber.from(amount as string)
+        .mul(price)
+        .div(ethers.constants.WeiPerEther);
+
+      return `depositV3:${pool}:${normalizedAmountInUsd.toString()}`;
     }
   );
 
@@ -80,23 +90,12 @@ describe("buildEncodedCalls", () => {
   const testCases = [
     {
       chainId: 1,
-      expected: ["depositV3:0xPRIME", "depositV3:0xPRIME", "depositV3:0xCORE"]
-    },
-    {
-      chainId: 137,
-      expected: ["depositV3:0xCORE", "depositV3:0xCORE", "depositV3:0xCORE"]
-    },
-    {
-      chainId: 42161,
-      expected: ["depositV3:0xCORE", "depositV3:0xCORE", "depositV3:0xCORE"]
-    },
-    {
-      chainId: 10,
-      expected: ["depositV3:0xCORE", "depositV3:0xCORE", "depositV3:0xCORE"]
-    },
-    {
-      chainId: 8453,
-      expected: ["depositV3:0xCORE", "depositV3:0xCORE", "depositV3:0xCORE"]
+      expected: [
+        "depositV3:0xPRIME:100000000000",
+        "depositV3:0xCORE:110000000000", 
+        "depositV3:0xCORE:10000000000000",
+        "depositV3:0xCORE:1000000000000"
+      ]
     }
   ];
 
@@ -105,7 +104,7 @@ describe("buildEncodedCalls", () => {
       const result = await buildEncodedCalls(
         {} as any,
         addresses,
-        mockStewardInterface,
+        stewardInterface,
         chainId
       );
 

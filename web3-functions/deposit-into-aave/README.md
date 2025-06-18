@@ -6,24 +6,25 @@ This script is designed to automate the process of depositing assets into Aave V
 
 ## Installation
 
-Ensure you have the necessary environment variables set up:
-
-1. `RELAY_API_KEY`: Your API key for the Gelato Relay service.
+Ensure the following environment variables are set up as secrets in your Gelato Web3Function:
+1. PRIVATE_KEY: EOA with permission to execute the role
+2. SAFE_ADDRESS: The Gnosis Safe address with the Roles Modifier enabled
+3. RPC_URL_<NETWORK>: JSON-RPC URLs for each supported network (e.g., RPC_URL_OPTIMISM, RPC_URL_ETHEREUM, etc.)
 
 ## How It Works
 
-1. **Initialization**: The script initializes a Web3 function using the Gelato Network's SDK.
-2. **Multi-Chain Support**: It supports multiple chains by iterating over the `AAVE_ADDRESSES` object, which contains the necessary contract addresses for each chain.
-3. **Reserve Checking**: For each chain, it retrieves all reserve tokens and their prices using Aave's data provider and price oracle contracts.
-4. **Deposit Condition**: It checks if the value of each token's reserve exceeds $100. If so, it encodes a deposit transaction.
-5. **Transaction Proposal**: If there are any deposits to be made, the script uses the Safe protocol to propose a multicall transaction, which is then sponsored by the Gelato Relay service.
+1. **Initialization**: The Web3Function is triggered and fetches secrets (private key, RPC URLs, Safe address).
+2. **Multi-Chain Support**: It loops through all supported chains defined in AAVE_ADDRESSES.
+3. **Reserve Evaluation**: For each chain, it retrieves reserves and prices via Aave’s Data Provider and Price Oracle.
+4. **Threshold Check**: If any token's reserve value exceeds $1000, the bot encodes a depositV3 transaction.
+5. **Role-Based Execution**: The EOA executes a call directly to the RolesModifier, leveraging its assigned permissions.
 
 ## Testing
 
 To test the script, run the following command:
 
 ```bash
-w3f-run W3FNAME --logs
+npx hardhat w3f-run web3-functions/deposit-into-aave/index.ts --logs
 ```
 
 This will execute the script and log the output, allowing you to verify its functionality.
