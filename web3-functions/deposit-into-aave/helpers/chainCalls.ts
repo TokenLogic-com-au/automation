@@ -1,21 +1,14 @@
 import { Contract } from "@ethersproject/contracts";
 import { ethers } from "ethers";
 import { AAVE_DATA_PROVIDER_ABI, AAVE_PRICE_ORACLE_ABI, ERC20_ABI } from "../abis";
-import { AAVE_ADDRESSES } from "../constants";
+import {
+  AAVE_ADDRESSES,
+  IGNORED_TOKENS,
+  PRIME_MAINNET_TOKENS
+} from "../constants";
 import { calculateUsdValue } from "./value";
 
 const MIN_USD_THRESHOLD = ethers.BigNumber.from(1000);
-
-// Ignored tokens
-const IGNORED_TOKENS = new Set([
-  "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f".toLowerCase() // GHO
-]);
-
-// Tokens to deposit into prime pool
-const PRIME_MAINNET_TOKENS = new Set([
-  "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".toLowerCase(), // wETH
-  "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0".toLowerCase()  // wstETH
-]);
 
 export async function buildEncodedCalls(
   provider: ethers.providers.Provider,

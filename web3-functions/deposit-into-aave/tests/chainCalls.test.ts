@@ -1,18 +1,19 @@
 import { ethers } from "ethers";
 import { buildEncodedCalls } from "../helpers/chainCalls";
-import { Interface, FunctionFragment } from "ethers/lib/utils";
+import { FunctionFragment } from "ethers/lib/utils";
 import { STEWARD_ABI } from "../abis";
-
-const WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
-const WSTETH = "0x7f39c581f595b53c5cb5bb5985d66ec2a7a6a2d2";
-const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f";
-const GHO = "0x3f3a32b5ee3f858a58b3cc9b69ee65e7b6f72df1";
+import {
+  WETH,
+  WSTETH,
+  GHO,
+  DAI
+} from "../constants";
 
 const fakeBalances: Record<string, ethers.BigNumber> = {
-  [WETH.toLowerCase()]: ethers.utils.parseEther("1"),
-  [WSTETH.toLowerCase()]: ethers.utils.parseEther("1"),
-  [DAI.toLowerCase()]: ethers.utils.parseEther("1000"),
-  [GHO.toLowerCase()]: ethers.utils.parseEther("1000")
+  [WETH]: ethers.utils.parseEther("1"),
+  [WSTETH]: ethers.utils.parseEther("1"),
+  [DAI]: ethers.utils.parseEther("1000"),
+  [GHO]: ethers.utils.parseEther("1000")
 };
 
 jest.mock("@ethersproject/contracts", () => {
@@ -39,10 +40,10 @@ jest.mock("@ethersproject/contracts", () => {
       if (lower === "0xoracle") {
         return {
           getAssetsPrices: jest.fn().mockResolvedValue([
-            ethers.BigNumber.from("100000000000"), // WETH: $1,000 (1_000 * 1e8)
-            ethers.BigNumber.from("110000000000"), // WSTETH: $1,100 (1_100 * 1e8)
-            ethers.BigNumber.from("10000000000"),  // DAI: $100 (100 * 1e8)
-            ethers.BigNumber.from("1000000000")    // GHO: $10 (10 * 1e8)
+            ethers.BigNumber.from("100000000000"), // WETH: $1,000
+            ethers.BigNumber.from("110000000000"), // WSTETH: $1,100
+            ethers.BigNumber.from("10000000000"),  // DAI: $100
+            ethers.BigNumber.from("1000000000")    // GHO: $10
           ])
         };
       }
@@ -91,10 +92,9 @@ describe("buildEncodedCalls", () => {
     {
       chainId: 1,
       expected: [
-        "depositV3:0xPRIME:100000000000",
-        "depositV3:0xCORE:110000000000", 
-        "depositV3:0xCORE:10000000000000",
-        "depositV3:0xCORE:1000000000000"
+        "depositV3:0xPRIME:100000000000",  // WETH
+        "depositV3:0xPRIME:110000000000",  // WSTETH
+        "depositV3:0xCORE:10000000000000"  // DAI
       ]
     }
   ];
