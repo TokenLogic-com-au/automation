@@ -50,10 +50,10 @@ export const SAFE_ADDRESS = "0x22740deBa78d5a0c24C58C740e3715ec29de1bFa";
 
 export const ROLE_KEY = '0x616176655f6465706f7369746f72000000000000000000000000000000000000';
 
-export const GHO = "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f".toLowerCase();      // GHO
-export const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".toLowerCase();     // wETH
-export const WSTETH = "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0".toLowerCase();   // wstETH
-export const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f".toLowerCase(); // DAI
+export const GHO = "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f".toLowerCase();    
+export const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".toLowerCase();     
+export const WSTETH = "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0".toLowerCase();   
+export const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f".toLowerCase(); 
 
 export const IGNORED_TOKENS = new Set([GHO]);
 
