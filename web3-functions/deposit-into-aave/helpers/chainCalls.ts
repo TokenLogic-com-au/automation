@@ -1,6 +1,6 @@
 import { Contract } from "@ethersproject/contracts";
 import { ethers } from "ethers";
-import { AAVE_DATA_PROVIDER_ABI, AAVE_PRICE_ORACLE_ABI, ERC20_ABI } from "../abis";
+import { AAVE_DATA_PROVIDER_V3_ABI, AAVE_PRICE_ORACLE_ABI, ERC20_ABI } from "../abis";
 import {
   AAVE_ADDRESSES,
   IGNORED_TOKENS,
@@ -16,9 +16,9 @@ export async function buildEncodedCalls(
   stewardInterface: ethers.utils.Interface,
   chainId: number
 ): Promise<string[]> {
-  const { dataProvider, priceOracle, collector, corePool, primePool } = addresses;
+  const { dataProviderV3, priceOracle, collector, corePool, primePool } = addresses;
 
-  const dataProviderContract = new Contract(dataProvider, AAVE_DATA_PROVIDER_ABI, provider);
+  const dataProviderContract = new Contract(dataProviderV3, AAVE_DATA_PROVIDER_V3_ABI, provider);
   const priceOracleContract = new Contract(priceOracle, AAVE_PRICE_ORACLE_ABI, provider);
 
   const reserves = await dataProviderContract.getAllReservesTokens();

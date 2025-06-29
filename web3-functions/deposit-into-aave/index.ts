@@ -1,6 +1,7 @@
 import { Web3Function, Web3FunctionContext } from "@gelatonetwork/web3-functions-sdk";
 import { ethers } from "ethers";
 import { buildEncodedCalls } from "./helpers/chainCalls";
+import { buildMigrationCalls } from "./helpers/migrationCalls";
 import { executeDepositWithRole } from "./helpers/safe";
 import { STEWARD_ABI } from "./abis";
 import { AAVE_ADDRESSES, SAFE_ADDRESS } from "./constants";
@@ -15,12 +16,12 @@ const getNetworkKey = (chainId: number): NetworkKey => {
     10: "OPTIMISM",
     8453: "BASE",
   };
-  
+
   const network = networkMap[chainId];
   if (!network) {
     throw new Error(`Unsupported chain ID: ${chainId}`);
   }
-  
+
   return network;
 };
 
@@ -41,7 +42,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const results = await Promise.allSettled(
     Object.entries(AAVE_ADDRESSES).map(async ([chainIdStr, addresses]) => {
       const chainId = Number(chainIdStr);
-      
+
       try {
         const networkKey = getNetworkKey(chainId);
         const rpcUrl = await secrets.get(`RPC_URL_${networkKey}`);
@@ -51,12 +52,20 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
         }
 
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-        const encodedCalls = await buildEncodedCalls(provider, addresses, stewardInterface, chainId);
-        
+
+        const [depositCalls, migrationCalls] = await Promise.all([
+          buildEncodedCalls(provider, addresses, stewardInterface, chainId),
+          buildMigrationCalls(provider, addresses, stewardInterface, chainId),
+        ]);
+
+        const encodedCalls = [...depositCalls, ...migrationCalls];
+
         if (!encodedCalls.length) {
-          console.log(`ℹ️ No encoded calls for chain ${chainId}`);
+          console.log(`ℹ️ No encoded or migration calls for chain ${chainId}`);
           return;
         }
+
+        console.log(`📦 Chain ${chainId}: ${depositCalls.length} deposits, ${migrationCalls.length} migrations`);
 
         const multicallData = stewardInterface.encodeFunctionData("multicall", [encodedCalls]);
 
@@ -68,17 +77,17 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
           addresses.poolExposureSteward,
           multicallData
         );
-        
+
         console.log(`✅ Executed transaction on behalf of Safe on chain ${chainId}`);
       } catch (error) {
         console.error(`❌ Error processing chain ${chainId}:`, error instanceof Error ? error.message : error);
-        throw error; 
+        throw error;
       }
     })
   );
 
-  const successes = results.filter(r => r.status === "fulfilled").length;
-  const failures = results.filter(r => r.status === "rejected").length;
+  const successes = results.filter((r) => r.status === "fulfilled").length;
+  const failures = results.filter((r) => r.status === "rejected").length;
 
   return {
     canExec: false,

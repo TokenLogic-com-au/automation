@@ -103,7 +103,7 @@ describe("buildEncodedCalls", () => {
     it(`routes correctly on chainId ${chainId}`, async () => {
       const result = await buildEncodedCalls(
         {} as any,
-        addresses,
+        { ...addresses, dataProviderV3: "0xdata" },
         stewardInterface,
         chainId
       );
