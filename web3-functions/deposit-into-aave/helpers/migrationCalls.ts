@@ -99,17 +99,12 @@ export async function buildMigrationCalls(
       eligible.map(async (entry, i) => {
         const asset = entry.token;
         const balance = entry.balance;
+        const aTokenV2 = entry.aTokenAddress;
 
         try {
-          const { aTokenAddress: aTokenV2 } =
-            await dpV2.getReserveTokensAddresses(asset);
-          if (!aTokenV2 || aTokenV2 === ethers.constants.AddressZero) {
+          if (!aTokenV2 || aTokenV2 === ethers.constants.AddressZero)
             return null;
-          }
-
-          if (balance.isZero()) {
-            return null;
-          }
+          if (balance.isZero()) return null;
 
           const valueUsd = calculateUsdValue(balance, prices[i], decimals[i]);
 
