@@ -6,7 +6,7 @@ import { executeDepositWithRole } from "./helpers/safe";
 import { STEWARD_ABI } from "./abis";
 import { AAVE_ADDRESSES, SAFE_ADDRESS } from "./constants";
 
-type NetworkKey = "ETHEREUM" | "POLYGON" | "ARBITRUM" | "OPTIMISM" | "BASE";
+type NetworkKey = "ETHEREUM" | "POLYGON" | "ARBITRUM" | "OPTIMISM" | "BASE" | "AVALANCHE";
 
 const getNetworkKey = (chainId: number): NetworkKey => {
   const networkMap: Record<number, NetworkKey> = {
@@ -15,6 +15,7 @@ const getNetworkKey = (chainId: number): NetworkKey => {
     42161: "ARBITRUM",
     10: "OPTIMISM",
     8453: "BASE",
+    43114: "AVALANCHE",
   };
 
   const network = networkMap[chainId];

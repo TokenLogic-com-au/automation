@@ -364,6 +364,13 @@ const ERC20_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    name: "totalSupply",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
 ];
 
 const ROLES_MODIFIER_ABI = [

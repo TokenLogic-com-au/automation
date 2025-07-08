@@ -79,6 +79,22 @@ export const AAVE_ADDRESSES: Record<number, AaveAddress> = {
     priceOracle: "0x2Cc0Fc26eD4563A5ce5e8bdcfe1A2878676Ae156",
     // https://basescan.org/address/0xA238Dd80C259a72e81d7e4664a9801593F98d1c5
     corePool: "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5"
+  },
+  43114: {
+    // https://snowtrace.io/address/0x0d68D50DB848dfE6012456781c1D79A11eD12a2e
+    poolExposureSteward: "0x0d68D50DB848dfE6012456781c1D79A11eD12a2e",
+    // https://snowtrace.io/address/0x243Aa95cAC2a25651eda86e80bEe66114413c43b
+    dataProviderV3: "0x243Aa95cAC2a25651eda86e80bEe66114413c43b",
+    // https://snowtrace.io/address/0x65285E9dfab318f57051ab2b139ccCf232945451
+    dataProviderV2: "0x65285E9dfab318f57051ab2b139ccCf232945451",
+    // https://snowtrace.io/address/0x5ba7fd868c40c16f7aDfAe6CF87121E13FC2F7a0
+    collector: "0x5ba7fd868c40c16f7aDfAe6CF87121E13FC2F7a0",
+    // https://snowtrace.io/address/0xEBd36016B3eD09D4693Ed4251c67Bd858c3c7C9C
+    priceOracle: "0xEBd36016B3eD09D4693Ed4251c67Bd858c3c7C9C",
+    // https://snowtrace.io/address/0x794a61358D6845594F94dc1DB02A252b5b4814aD
+    corePool: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+    // https://snowtrace.io/address/0x4F01AeD16D97E3aB5ab2B501154DC9bb0F1A5A2C
+    v2Pool: "0x4F01AeD16D97E3aB5ab2B501154DC9bb0F1A5A2C"
   }
 };
 

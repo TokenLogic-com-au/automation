@@ -1,5 +1,4 @@
 import { buildMigrationCalls } from "../helpers/migrationCalls";
-
 import { Contract } from "@ethersproject/contracts";
 import { ethers, BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
@@ -20,6 +19,7 @@ const mockGetReserveData = jest.fn();
 const mockTotalSupply = jest.fn();
 const mockBalanceOf = jest.fn();
 const mockGetAllReservesTokens = jest.fn();
+const mockGetReserveConfigurationData = jest.fn();
 
 const ContractMock = Contract as unknown as jest.Mock;
 ContractMock.mockImplementation(() => ({
@@ -30,6 +30,7 @@ ContractMock.mockImplementation(() => ({
   getReserveData: mockGetReserveData,
   totalSupply: mockTotalSupply,
   balanceOf: mockBalanceOf,
+  getReserveConfigurationData: mockGetReserveConfigurationData,
 }));
 
 const fakeSteward = { encodeFunctionData: jest.fn(() => "0xEncodedCall") };
@@ -47,14 +48,19 @@ const baseAddresses = {
 function setHappyPathMocks(token: string) {
   mockGetAllReservesTokens.mockReturnValueOnce([{ tokenAddress: token }]);
   mockGetAssetsPrices.mockReturnValueOnce([BigNumber.from("1000")]);
-  mockGetReserveCaps.mockReturnValueOnce([
-    BigNumber.from("0"), // borrowCap
-    BigNumber.from("1000000000000000000000000"), // supplyCap
-  ]);
+
+  mockGetReserveCaps.mockReturnValueOnce(
+    Promise.resolve([
+      BigNumber.from("0"), // borrowCap
+      BigNumber.from("1000000000000000000000000"), // supplyCap
+    ])
+  );
+
   mockGetReserveTokensAddresses.mockReturnValue({ aTokenAddress: "0xATokenV2" });
   mockGetReserveData.mockReturnValue({ availableLiquidity: parseUnits("5", 18) });
   mockBalanceOf.mockReturnValue(parseUnits("3", 18));
   mockTotalSupply.mockReturnValue(BigNumber.from("0"));
+  mockGetReserveConfigurationData.mockReturnValue(Promise.resolve({ decimals: 18 }));
 }
 
 describe("buildMigrationCalls", () => {
