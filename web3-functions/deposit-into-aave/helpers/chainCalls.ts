@@ -1,34 +1,36 @@
 import { Contract } from "@ethersproject/contracts";
 import { ethers } from "ethers";
-import { AAVE_DATA_PROVIDER_V3_ABI, AAVE_PRICE_ORACLE_ABI, ERC20_ABI } from "../abis";
+import { AAVE_PRICE_ORACLE_ABI, ERC20_ABI } from "../abis";
 import {
   AAVE_ADDRESSES,
   IGNORED_TOKENS,
-  PRIME_MAINNET_TOKENS
+  PRIME_MAINNET_TOKENS,
 } from "../constants";
 import { calculateUsdValue } from "./value";
 
-const MIN_USD_THRESHOLD = ethers.BigNumber.from(1000);
-
 export async function buildEncodedCalls(
   provider: ethers.providers.Provider,
-  addresses: typeof AAVE_ADDRESSES[number],
+  addresses: (typeof AAVE_ADDRESSES)[number],
   stewardInterface: ethers.utils.Interface,
-  chainId: number
+  chainId: number,
+  reservesV3: { tokenAddress: string }[],
+  configs: { decimals: number; isActive: boolean; isFrozen: boolean }[],
+  chainCallParams: { CHAINCALL_MIN_USD_THRESHOLD: ethers.BigNumber }
 ): Promise<string[]> {
-  const { dataProviderV3, priceOracle, collector, corePool, primePool } = addresses;
+  const { priceOracle, collector, corePoolV3, primePoolV3 } = addresses;
 
-  const dataProviderContract = new Contract(dataProviderV3, AAVE_DATA_PROVIDER_V3_ABI, provider);
-  const priceOracleContract = new Contract(priceOracle, AAVE_PRICE_ORACLE_ABI, provider);
-
-  const reserves = await dataProviderContract.getAllReservesTokens();
-  if (!reserves.length) return [];
-
-  const tokens = reserves.map((r: { tokenAddress: string }) => r.tokenAddress.toLowerCase());
-  const prices = await priceOracleContract.getAssetsPrices(tokens);
-  const configs = await Promise.all(
-    tokens.map((token: string) => dataProviderContract.getReserveConfigurationData(token))
+  const priceOracleContract = new Contract(
+    priceOracle,
+    AAVE_PRICE_ORACLE_ABI,
+    provider
   );
+
+  if (!reservesV3.length) return [];
+
+  const tokens = reservesV3.map((r: { tokenAddress: string }) =>
+    r.tokenAddress.toLowerCase()
+  );
+  const prices = await priceOracleContract.getAssetsPrices(tokens);
 
   const encodedCalls: string[] = [];
 
@@ -44,18 +46,18 @@ export async function buildEncodedCalls(
     const balance = await erc20.balanceOf(collector);
     const valueUsd = calculateUsdValue(balance, prices[i], decimals);
 
-    if (valueUsd.gte(MIN_USD_THRESHOLD)) {
+    if (valueUsd.gte(chainCallParams.CHAINCALL_MIN_USD_THRESHOLD)) {
       const isMainnet = chainId === 1;
 
       const pool =
-        isMainnet && PRIME_MAINNET_TOKENS.has(token) && primePool
-          ? primePool
-          : corePool;
+        isMainnet && PRIME_MAINNET_TOKENS.has(token) && primePoolV3
+          ? primePoolV3
+          : corePoolV3;
 
       const depositData = stewardInterface.encodeFunctionData("depositV3", [
         pool,
         token,
-        balance.toString()
+        balance.toString(),
       ]);
       encodedCalls.push(depositData);
     }

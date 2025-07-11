@@ -1,12 +1,25 @@
-import { Web3Function, Web3FunctionContext } from "@gelatonetwork/web3-functions-sdk";
+import {
+  Web3Function,
+  Web3FunctionContext,
+} from "@gelatonetwork/web3-functions-sdk";
+import { Contract } from "@ethersproject/contracts";
 import { ethers } from "ethers";
 import { buildEncodedCalls } from "./helpers/chainCalls";
 import { buildMigrationCalls } from "./helpers/migrationCalls";
 import { executeDepositWithRole } from "./helpers/safe";
-import { STEWARD_ABI } from "./abis";
+import { AAVE_DATA_PROVIDER_V3_ABI, STEWARD_ABI } from "./abis";
 import { AAVE_ADDRESSES, SAFE_ADDRESS } from "./constants";
+import { getV3ConfigsAndReserves } from "./helpers/getV3Configs";
+import { getMigrationParams } from "./helpers/migrationParams";
+import { getChainCallParams } from "./helpers/chainCallsParams";
 
-type NetworkKey = "ETHEREUM" | "POLYGON" | "ARBITRUM" | "OPTIMISM" | "BASE" | "AVALANCHE";
+type NetworkKey =
+  | "ETHEREUM"
+  | "POLYGON"
+  | "ARBITRUM"
+  | "OPTIMISM"
+  | "BASE"
+  | "AVALANCHE";
 
 const getNetworkKey = (chainId: number): NetworkKey => {
   const networkMap: Record<number, NetworkKey> = {
@@ -28,6 +41,9 @@ const getNetworkKey = (chainId: number): NetworkKey => {
 
 Web3Function.onRun(async (context: Web3FunctionContext) => {
   const { secrets } = context;
+
+  const migrationParams = await getMigrationParams(secrets);
+  const chainCallParams = await getChainCallParams(secrets);
 
   const privateKey = await secrets.get("PRIVATE_KEY");
 
@@ -54,9 +70,35 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
 
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
+        const dataProviderContract = new Contract(
+          addresses.dataProviderV3,
+          AAVE_DATA_PROVIDER_V3_ABI,
+          provider
+        );
+
+        const { reserves: reservesV3, configs } = await getV3ConfigsAndReserves(
+          dataProviderContract
+        );
+
         const [depositCalls, migrationCalls] = await Promise.all([
-          buildEncodedCalls(provider, addresses, stewardInterface, chainId),
-          buildMigrationCalls(provider, addresses, stewardInterface, chainId),
+          buildEncodedCalls(
+            provider,
+            addresses,
+            stewardInterface,
+            chainId,
+            reservesV3,
+            configs,
+            chainCallParams
+          ),
+          buildMigrationCalls(
+            provider,
+            addresses,
+            stewardInterface,
+            chainId,
+            reservesV3,
+            configs,
+            migrationParams
+          ),
         ]);
 
         const encodedCalls = [...depositCalls, ...migrationCalls];
@@ -66,9 +108,13 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
           return;
         }
 
-        console.log(`📦 Chain ${chainId}: ${depositCalls.length} deposits, ${migrationCalls.length} migrations`);
+        console.log(
+          `📦 Chain ${chainId}: ${depositCalls.length} deposits, ${migrationCalls.length} migrations`
+        );
 
-        const multicallData = stewardInterface.encodeFunctionData("multicall", [encodedCalls]);
+        const multicallData = stewardInterface.encodeFunctionData("multicall", [
+          encodedCalls,
+        ]);
 
         await executeDepositWithRole(
           chainId,
@@ -79,9 +125,14 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
           multicallData
         );
 
-        console.log(`✅ Executed transaction on behalf of Safe on chain ${chainId}`);
+        console.log(
+          `✅ Executed transaction on behalf of Safe on chain ${chainId}`
+        );
       } catch (error) {
-        console.error(`❌ Error processing chain ${chainId}:`, error instanceof Error ? error.message : error);
+        console.error(
+          `❌ Error processing chain ${chainId}:`,
+          error instanceof Error ? error.message : error
+        );
         throw error;
       }
     })

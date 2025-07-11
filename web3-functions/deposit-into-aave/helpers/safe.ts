@@ -13,14 +13,17 @@ export async function executeDepositWithRole(
   const wallet = new ethers.Wallet(privateKey, provider);
   const rolesInterface = new ethers.utils.Interface(ROLES_MODIFIER_ABI);
 
-  const rolesData = rolesInterface.encodeFunctionData("execTransactionWithRole", [
-    target,
-    0,
-    callData,
-    0,
-    roleKey,
-    false
-  ]);
+  const rolesData = rolesInterface.encodeFunctionData(
+    "execTransactionWithRole",
+    [
+      target,
+      0, // Ether value of module transaction
+      callData,
+      0, // Operation type of module transaction
+      roleKey,
+      false,
+    ]
+  );
 
   try {
     const tx = await wallet.sendTransaction({
@@ -30,12 +33,20 @@ export async function executeDepositWithRole(
     });
 
     await tx.wait();
-    console.log(`✅ Executed with role on chain ${chainId} — Tx hash: ${tx.hash}`);
+    console.log(
+      `✅ Executed with role on chain ${chainId} — Tx hash: ${tx.hash}`
+    );
   } catch (error) {
     if (error instanceof Error) {
-      console.error(`❌ Error executing transaction on chain ${chainId}:`, error.message);
+      console.error(
+        `❌ Error executing transaction on chain ${chainId}:`,
+        error.message
+      );
     } else {
-      console.error(`❌ Error executing transaction on chain ${chainId}:`, error);
+      console.error(
+        `❌ Error executing transaction on chain ${chainId}:`,
+        error
+      );
     }
   }
 }
