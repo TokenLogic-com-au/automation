@@ -4,7 +4,7 @@ import {
 } from "@gelatonetwork/web3-functions-sdk";
 import { Contract } from "@ethersproject/contracts";
 import { ethers } from "ethers";
-import { buildEncodedCalls } from "./helpers/chainCalls";
+import { buildDepositCalls } from "./helpers/depositCalls";
 import { buildMigrationCalls } from "./helpers/migrationCalls";
 import { executeDepositWithRole } from "./helpers/safe";
 import { AAVE_DATA_PROVIDER_V3_ABI, STEWARD_ABI } from "./abis";
@@ -81,7 +81,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
         );
 
         const [depositCalls, migrationCalls] = await Promise.all([
-          buildEncodedCalls(
+          buildDepositCalls(
             provider,
             addresses,
             stewardInterface,

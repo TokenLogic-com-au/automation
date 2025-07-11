@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { buildEncodedCalls } from "../helpers/chainCalls";
+import { buildDepositCalls } from "../helpers/depositCalls";
 import { FunctionFragment } from "ethers/lib/utils";
 import { STEWARD_ABI } from "../abis";
 import { WETH, WSTETH, GHO, DAI } from "../constants";
@@ -88,7 +88,7 @@ describe("buildEncodedCalls", () => {
   const CHAINCALL_MIN_USD_THRESHOLD = ethers.BigNumber.from("1000");
 
   it("encodes deposit calls correctly for mainnet", async () => {
-    const result = await buildEncodedCalls(
+    const result = await buildDepositCalls(
       {} as any,
       addresses,
       stewardInterface,

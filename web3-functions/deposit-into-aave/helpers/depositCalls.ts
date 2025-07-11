@@ -8,7 +8,7 @@ import {
 } from "../constants";
 import { calculateUsdValue } from "./value";
 
-export async function buildEncodedCalls(
+export async function buildDepositCalls(
   provider: ethers.providers.Provider,
   addresses: (typeof AAVE_ADDRESSES)[number],
   stewardInterface: ethers.utils.Interface,
