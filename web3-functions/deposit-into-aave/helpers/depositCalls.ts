@@ -7,6 +7,7 @@ import {
   PRIME_MAINNET_TOKENS,
 } from "../constants";
 import { calculateUsdValue } from "./value";
+import { getDestinationPool } from "./getDestinationPool";
 
 export async function buildDepositCalls(
   provider: ethers.providers.Provider,
@@ -15,7 +16,7 @@ export async function buildDepositCalls(
   chainId: number,
   reservesV3: { tokenAddress: string }[],
   configs: { decimals: number; isActive: boolean; isFrozen: boolean }[],
-  chainCallParams: { CHAINCALL_MIN_USD_THRESHOLD: ethers.BigNumber }
+  depositCallParams: { DEPOSITCALL_MIN_USD_THRESHOLD: ethers.BigNumber }
 ): Promise<string[]> {
   const { priceOracle, collector, corePoolV3, primePoolV3 } = addresses;
 
@@ -46,16 +47,12 @@ export async function buildDepositCalls(
     const balance = await erc20.balanceOf(collector);
     const valueUsd = calculateUsdValue(balance, prices[i], decimals);
 
-    if (valueUsd.gte(chainCallParams.CHAINCALL_MIN_USD_THRESHOLD)) {
-      const isMainnet = chainId === 1;
+    if (valueUsd.gte(depositCallParams.DEPOSITCALL_MIN_USD_THRESHOLD)) {
 
-      const pool =
-        isMainnet && PRIME_MAINNET_TOKENS.has(token) && primePoolV3
-          ? primePoolV3
-          : corePoolV3;
+      const destPool = getDestinationPool(chainId, token, primePoolV3, corePoolV3);
 
       const depositData = stewardInterface.encodeFunctionData("depositV3", [
-        pool,
+        destPool,
         token,
         balance.toString(),
       ]);

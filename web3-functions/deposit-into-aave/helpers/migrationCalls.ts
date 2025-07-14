@@ -4,11 +4,13 @@ import {
   AAVE_DATA_PROVIDER_V3_ABI,
   AAVE_DATA_PROVIDER_V2_ABI,
   AAVE_PRICE_ORACLE_ABI,
-  ERC20_ABI,
 } from "../abis";
 import { calculateUsdValue } from "./value";
-import { AAVE_ADDRESSES, PRIME_MAINNET_TOKENS } from "../constants";
+import { AAVE_ADDRESSES } from "../constants";
 import { getV2TokenBalancesToMigrate } from "./getTokenBalancesToMigrate";
+import { getMigratableAmount } from "./getMigratableAmount";
+import { adjustForSupplyCap } from "./adjustForSupplyCap";
+import { getDestinationPool } from "./getDestinationPool";
 
 type NetworkConfig = (typeof AAVE_ADDRESSES)[number];
 
@@ -78,68 +80,52 @@ export async function buildMigrationCalls(
   const calls = (
     await Promise.all(
       getAssetsToMigrate.map(async (entry, i) => {
-        const asset = entry.token;
-        const balance = entry.balance;
-        const aTokenV2 = entry.aTokenAddress;
+        const { token: asset, balance, aTokenAddress } = entry;
         const { decimals } = configs[i];
 
         try {
-          if (!aTokenV2 || aTokenV2 === ethers.constants.AddressZero)
+          if (
+            !ethers.utils.isAddress(aTokenAddress) ||
+            aTokenAddress === ethers.constants.AddressZero
+          )
             return null;
-          if (balance.isZero()) return null;
 
-          const valueUsd = calculateUsdValue(balance, prices[i], decimals);
+          let amount = await getMigratableAmount(
+            asset,
+            balance,
+            dataProviderV2,
+            migrationParams.MIGRATION_BPS,
+            migrationParams.MAX_BPS
+          );
+          if (!amount) return null;
+
+          const valueUsd = calculateUsdValue(amount, prices[i], decimals);
           if (valueUsd.lt(migrationParams.MIGRATION_MIN_USD_THRESHOLD))
             return null;
 
-          const { availableLiquidity } = await dataProviderV2.getReserveData(
-            asset
-          );
-          let amount = balance.lt(availableLiquidity)
-            ? balance
-            : availableLiquidity;
-          if (amount.isZero()) return null;
-
-          amount = amount
-            .mul(migrationParams.MIGRATION_BPS)
-            .div(migrationParams.MAX_BPS);
-          if (amount.isZero()) return null;
-
           const supplyCap = caps[i][1];
-          if (!supplyCap.isZero()) {
-            const { aTokenAddress: v3AToken } =
-              await dataProviderV3.getReserveTokensAddresses(asset);
-            if (!v3AToken || v3AToken === ethers.constants.AddressZero)
-              return null;
+          const adjustedAmount = await adjustForSupplyCap(
+            asset,
+            amount,
+            supplyCap,
+            decimals,
+            dataProviderV3,
+            provider
+          );
+          if (!adjustedAmount) return null;
 
-            const v3SupplyContract = new Contract(
-              v3AToken,
-              ERC20_ABI,
-              provider
-            );
-            const v3Supply: BigNumber = await v3SupplyContract.totalSupply();
-
-            const normalizedCap = supplyCap.mul(
-              ethers.BigNumber.from(10).pow(decimals)
-            );
-            const roomLeft = normalizedCap.gt(v3Supply)
-              ? normalizedCap.sub(v3Supply)
-              : BigNumber.from(0);
-
-            if (roomLeft.isZero()) return null;
-            if (roomLeft.lt(amount)) amount = roomLeft;
-          }
-
-          const destPool =
-            chainId === 1 && primePoolV3 && PRIME_MAINNET_TOKENS.has(asset)
-              ? primePoolV3
-              : corePoolV3;
+          const destPool = getDestinationPool(
+            chainId,
+            asset,
+            primePoolV3,
+            corePoolV3
+          );
 
           return steward.encodeFunctionData("migrateV2toV3", [
             corePoolV2,
             destPool,
             asset,
-            amount.toString(),
+            adjustedAmount.toString(),
           ]);
         } catch {
           return null;

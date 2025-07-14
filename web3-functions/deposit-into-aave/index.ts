@@ -11,7 +11,7 @@ import { AAVE_DATA_PROVIDER_V3_ABI, STEWARD_ABI } from "./abis";
 import { AAVE_ADDRESSES, SAFE_ADDRESS } from "./constants";
 import { getV3ConfigsAndReserves } from "./helpers/getV3Configs";
 import { getMigrationParams } from "./helpers/migrationParams";
-import { getChainCallParams } from "./helpers/chainCallsParams";
+import { getDepositCallParams } from "./helpers/depositCallsParams";
 
 type NetworkKey =
   | "ETHEREUM"
@@ -43,7 +43,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const { secrets } = context;
 
   const migrationParams = await getMigrationParams(secrets);
-  const chainCallParams = await getChainCallParams(secrets);
+  const depositCallParams = await getDepositCallParams(secrets);
 
   const privateKey = await secrets.get("PRIVATE_KEY");
 
@@ -88,7 +88,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
             chainId,
             reservesV3,
             configs,
-            chainCallParams
+            depositCallParams
           ),
           buildMigrationCalls(
             provider,

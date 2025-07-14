@@ -21,7 +21,7 @@ export async function executeDepositWithRole(
       callData,
       0, // Operation type of module transaction
       roleKey,
-      false,
+      false, // Should the function revert on inner execution returning success false?
     ]
   );
 

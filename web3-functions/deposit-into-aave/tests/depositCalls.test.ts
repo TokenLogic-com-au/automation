@@ -85,7 +85,7 @@ describe("buildEncodedCalls", () => {
     { decimals: 18, isActive: true, isFrozen: false },
   ];
 
-  const CHAINCALL_MIN_USD_THRESHOLD = ethers.BigNumber.from("1000");
+  const DEPOSITCALL_MIN_USD_THRESHOLD = ethers.BigNumber.from("1000");
 
   it("encodes deposit calls correctly for mainnet", async () => {
     const result = await buildDepositCalls(
@@ -95,7 +95,7 @@ describe("buildEncodedCalls", () => {
       1,
       reservesV3,
       configs,
-      { CHAINCALL_MIN_USD_THRESHOLD }
+      { DEPOSITCALL_MIN_USD_THRESHOLD }
     );
 
     expect(result).toEqual(
