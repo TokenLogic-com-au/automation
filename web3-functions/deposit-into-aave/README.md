@@ -1,8 +1,8 @@
-# Deposit Into Aave V3 Gelato Bot
+# Aave V3 Deposit & Migration Gelato Bot
 
 ## Overview
 
-This script is designed to automate the process of depositing assets into Aave V3 using a Gelato bot. It checks the reserves of various tokens across multiple chains and deposits them if their value exceeds $100.
+This script is designed to automate the process of depositing assets into Aave V3 using a Gelato bot. It checks the reserves of various tokens across multiple chains and deposits them if their value exceeds $1000. Additionally, it performs V2 to V3 migrations for eligible assets when applicable.
 
 ## Installation
 
@@ -20,8 +20,9 @@ Ensure the following environment variables are set up as secrets in your Gelato 
 1. **Initialization**: The Web3Function is triggered and fetches secrets (private key, RPC URLs, Safe address).
 2. **Multi-Chain Support**: It loops through all supported chains defined in AAVE_ADDRESSES.
 3. **Reserve Evaluation**: For each chain, it retrieves reserves and prices via Aave’s Data Provider and Price Oracle.
-4. **Threshold Check**: If any token's reserve value exceeds $1000, the bot encodes a depositV3 transaction.
-5. **Role-Based Execution**: The EOA executes a call directly to the RolesModifier, leveraging its assigned permissions.
+4. **Threshold Check**: If any token's reserve value exceeds $1000, the bot prepares a `depositV3` transaction.
+5. **V2 to V3 Migration**: For assets still held in Aave V2 with a V3 counterpart, the script checks if they surpass the migration threshold. If so, it prepares a `migrateV2toV3` transaction.
+6. **Role-Based Execution**: All encoded transactions (`depositV3` and `migrateV2toV3`) are executed via the RolesModifier contract, leveraging the EOA’s assigned permissions to perform batched, permissioned calls.
 
 ## Testing
 
