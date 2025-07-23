@@ -84,8 +84,6 @@ export const claimFees = async (
         (claimableBalances[i].toBigInt() * tokenPrices[i].toBigInt()) /
         BigInt(10) ** BigInt(tokenDecimal);
 
-      console.log(chainId, tokenAddresses[i], usdValue);
-
       if (usdValue >= MIN_USD_VALUE_FOR_CLAIM) {
         claimableTokens.push(tokenAddresses[i]);
       }
@@ -104,7 +102,6 @@ export const claimFees = async (
       },
       relayApiKey
     );
-    console.log(result);
   } else {
     console.log(Network[chainId], "No claimable tokens found!");
   }
