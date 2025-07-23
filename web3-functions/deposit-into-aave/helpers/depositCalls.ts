@@ -4,7 +4,6 @@ import { AAVE_PRICE_ORACLE_ABI, ERC20_ABI } from "../abis";
 import {
   AAVE_ADDRESSES,
   IGNORED_TOKENS,
-  PRIME_MAINNET_TOKENS,
 } from "../constants";
 import { calculateUsdValue } from "./value";
 import { getDestinationPool } from "./getDestinationPool";
@@ -16,7 +15,7 @@ export async function buildDepositCalls(
   chainId: number,
   reservesV3: { tokenAddress: string }[],
   configs: { decimals: number; isActive: boolean; isFrozen: boolean }[],
-  depositCallParams: { DEPOSITCALL_MIN_USD_THRESHOLD: ethers.BigNumber }
+  depositCallParams: { depositCallMinUsdThreshold: ethers.BigNumber }
 ): Promise<string[]> {
   const { priceOracle, collector, corePoolV3, primePoolV3 } = addresses;
 
@@ -47,7 +46,7 @@ export async function buildDepositCalls(
     const balance = await erc20.balanceOf(collector);
     const valueUsd = calculateUsdValue(balance, prices[i], decimals);
 
-    if (valueUsd.gte(depositCallParams.DEPOSITCALL_MIN_USD_THRESHOLD)) {
+    if (valueUsd.gte(depositCallParams.depositCallMinUsdThreshold)) {
 
       const destPool = getDestinationPool(chainId, token, primePoolV3, corePoolV3);
 

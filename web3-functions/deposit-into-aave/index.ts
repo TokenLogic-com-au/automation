@@ -42,8 +42,8 @@ const getNetworkKey = (chainId: number): NetworkKey => {
 Web3Function.onRun(async (context: Web3FunctionContext) => {
   const { secrets } = context;
 
-  const migrationParams = await getMigrationParams(secrets);
-  const depositCallParams = await getDepositCallParams(secrets);
+  const migrationParams = await getMigrationParams(context.userArgs);
+  const depositCallParams = await getDepositCallParams(context.userArgs);
 
   const privateKey = await secrets.get("PRIVATE_KEY");
 

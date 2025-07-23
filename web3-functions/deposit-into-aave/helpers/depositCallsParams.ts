@@ -2,19 +2,17 @@ import { Web3FunctionContext } from "@gelatonetwork/web3-functions-sdk/dist/lib/
 import { BigNumber } from "ethers";
 
 export const getDepositCallParams = async (
-  secrets: Web3FunctionContext["secrets"]
+  userArgs: Web3FunctionContext["userArgs"]
 ) => {
-  const rawMinUsd = await secrets.get("DEPOSITCALL_MIN_USD_THRESHOLD");
+  const { depositCallMinUsdThreshold } = userArgs;
 
-  if (!rawMinUsd) {
-    throw new Error("❌ Missing DEPOSITCALL_MIN_USD_THRESHOLD in secrets");
+  if (!depositCallMinUsdThreshold) {
+    throw new Error("❌ Missing depositCallMinUsdThreshold in userArgs");
   }
 
-  if (isNaN(Number(rawMinUsd))) {
-    throw new Error(`❌ Invalid DEPOSITCALL_MIN_USD_THRESHOLD: ${rawMinUsd}`);
+  if (isNaN(Number(depositCallMinUsdThreshold))) {
+    throw new Error(`❌ Invalid depositCallMinUsdThreshold: ${depositCallMinUsdThreshold}`);
   }
 
-  const DEPOSITCALL_MIN_USD_THRESHOLD = BigNumber.from(rawMinUsd);
-
-  return { DEPOSITCALL_MIN_USD_THRESHOLD };
+  return { depositCallMinUsdThreshold: BigNumber.from(depositCallMinUsdThreshold)};
 };

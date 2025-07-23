@@ -22,9 +22,9 @@ export async function buildMigrationCalls(
   v3Reserves: { tokenAddress: string }[],
   configs: { decimals: number }[],
   migrationParams: {
-    MIGRATION_MIN_USD_THRESHOLD: ethers.BigNumber;
-    MAX_BPS: number;
-    MIGRATION_BPS: number;
+    migrationMinUsdThreshold: ethers.BigNumber;
+    maxBps: number;
+    migrationBps: number;
   }
 ): Promise<string[]> {
   const {
@@ -94,13 +94,13 @@ export async function buildMigrationCalls(
             asset,
             balance,
             dataProviderV2,
-            migrationParams.MIGRATION_BPS,
-            migrationParams.MAX_BPS
+            migrationParams.migrationBps,
+            migrationParams.maxBps
           );
           if (!amount) return null;
 
           const valueUsd = calculateUsdValue(amount, prices[i], decimals);
-          if (valueUsd.lt(migrationParams.MIGRATION_MIN_USD_THRESHOLD))
+          if (valueUsd.lt(migrationParams.migrationMinUsdThreshold))
             return null;
 
           const supplyCap = caps[i][1];
