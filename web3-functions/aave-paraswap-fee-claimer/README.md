@@ -105,3 +105,13 @@ The bot provides clear status messages:
 - The bot limits RPC calls to 5 per execution to stay within Gelato limits
 - Token decimals are cached in storage to minimize future RPC calls
 - Only assets with ≥ $100 in claimable fees are processed
+
+## Testing
+
+Unit tests are available to verify the functionality of the Web3 Function. To run the tests, use the following command:
+
+```bash
+yarn test
+```
+
+This will execute the test suite and provide a report of the results.
