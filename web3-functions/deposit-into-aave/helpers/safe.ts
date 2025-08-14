@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { ROLES_MODIFIER_ABI } from "../abis";
 import { ROLE_KEY as roleKey } from "../constants";
 
-export async function executeDepositWithRole(
+export async function executeWithRole(
   chainId: number,
   provider: ethers.providers.Provider,
   privateKey: string,

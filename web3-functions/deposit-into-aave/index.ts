@@ -6,7 +6,7 @@ import { Contract } from "@ethersproject/contracts";
 import { ethers } from "ethers";
 import { buildDepositCalls } from "./helpers/depositCalls";
 import { buildMigrationCalls } from "./helpers/migrationCalls";
-import { executeDepositWithRole } from "./helpers/safe";
+import { executeWithRole } from "./helpers/safe";
 import { AAVE_DATA_PROVIDER_V3_ABI, STEWARD_ABI } from "./abis";
 import { AAVE_ADDRESSES, SAFE_ADDRESS } from "./constants";
 import { getV3ConfigsAndReserves } from "./helpers/getV3Configs";
@@ -40,10 +40,26 @@ const getNetworkKey = (chainId: number): NetworkKey => {
 };
 
 Web3Function.onRun(async (context: Web3FunctionContext) => {
-  const { secrets } = context;
+  const { userArgs, secrets, storage } = context;
 
-  const migrationParams = await getMigrationParams(context.userArgs);
-  const depositCallParams = await getDepositCallParams(context.userArgs);
+  const lastExecuted = Number((await storage.get("lastExecuted")) ?? "0");
+  const nextRun = lastExecuted + Number(userArgs.waitTimeUntilNextRun);
+  if (Date.now() < nextRun) {
+
+    const nextRunStr = new Date(nextRun).toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+
+    return {
+      canExec: false,
+      message: `🔑 Wait time until next run has not passed. Next run on ${nextRunStr}`,
+    };
+  }
+
+  const migrationParams = await getMigrationParams(userArgs);
+  const depositCallParams = await getDepositCallParams(userArgs);
 
   const privateKey = await secrets.get("PRIVATE_KEY");
 
@@ -116,7 +132,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
           encodedCalls,
         ]);
 
-        await executeDepositWithRole(
+        await executeWithRole(
           chainId,
           provider,
           privateKey,
@@ -124,6 +140,8 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
           addresses.poolExposureSteward,
           multicallData
         );
+
+        await storage.set("lastExecuted", Date.now().toString());
 
         console.log(
           `✅ Executed transaction on behalf of Safe on chain ${chainId}`

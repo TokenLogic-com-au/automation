@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
-import { executeDepositWithRole } from "../helpers/safe";
+import { executeWithRole } from "../helpers/safe";
 
-describe("executeDepositWithRole", () => {
+describe("executeWithRole", () => {
   const mockChainId = 1;
   const mockPrivateKey = "0xabc123abc123abc123abc123abc123abc123abc123abc123abc123abc123abc1";
   const mockRolesModifierAddress = "0x000000000000000000000000000000000000cafe";
@@ -29,7 +29,7 @@ describe("executeDepositWithRole", () => {
 
   it("should send a transaction using execTransactionWithRole", async () => {
     await expect(
-      executeDepositWithRole(
+      executeWithRole(
         mockChainId,
         mockProvider,
         mockPrivateKey,

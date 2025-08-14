@@ -3,5 +3,11 @@
   "runtime": "js-1.0",
   "memory": 128,
   "timeout": 30,
-  "userArgs": {}
+  "userArgs": {
+    "migrationMinUsdThreshold": "number",
+    "maxBps": "number",
+    "migrationBps": "number",
+    "depositCallMinUsdThreshold": "number",
+    "waitTimeUntilNextRun": "number"
+  }
 }
