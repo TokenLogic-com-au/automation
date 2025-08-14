@@ -107,9 +107,9 @@ describe("buildMigrationCalls", () => {
     ];
     const configs = [{ decimals: 18 }];
     const migrationParams = {
-      MIGRATION_MIN_USD_THRESHOLD: BigNumber.from("10000000000"), // 100 USD
-      MAX_BPS: 10000,
-      MIGRATION_BPS: 9000,
+      migrationMinUsdThreshold: BigNumber.from("10000000000"), // 100 USD
+      maxBps: 10000,
+      migrationBps: 9000,
     };
 
     const result = await buildMigrationCalls(
@@ -158,9 +158,9 @@ describe("buildMigrationCalls", () => {
     ];
     const configs = [{ decimals: 18 }];
     const migrationParams = {
-      MIGRATION_MIN_USD_THRESHOLD: BigNumber.from("30000000000"), // 300 USD
-      MAX_BPS: 10000,
-      MIGRATION_BPS: 9000,
+      migrationMinUsdThreshold: BigNumber.from("30000000000"), // 300 USD
+      maxBps: 10000,
+      migrationBps: 9000,
     };
 
     const result = await buildMigrationCalls(
@@ -199,9 +199,9 @@ describe("buildMigrationCalls", () => {
     ];
     const configs = [{ decimals: 18 }];
     const migrationParams = {
-      MIGRATION_MIN_USD_THRESHOLD: BigNumber.from("10000000000"), // 100 USD
-      MAX_BPS: 10000,
-      MIGRATION_BPS: 9000,
+      migrationMinUsdThreshold: BigNumber.from("10000000000"), // 100 USD
+      maxBps: 10000,
+      migrationBps: 9000,
     };
 
     require("../helpers/getTokenBalancesToMigrate").getV2TokenBalancesToMigrate.mockResolvedValueOnce(
@@ -244,9 +244,9 @@ describe("buildMigrationCalls", () => {
     ];
     const configs = [{ decimals: 18 }];
     const migrationParams = {
-      MIGRATION_MIN_USD_THRESHOLD: BigNumber.from("10000000000"), // 100 USD
-      MAX_BPS: 10000,
-      MIGRATION_BPS: 9000,
+      migrationMinUsdThreshold: BigNumber.from("10000000000"), // 100 USD
+      maxBps: 10000,
+      migrationBps: 9000,
     };
 
     require("../helpers/getTokenBalancesToMigrate").getV2TokenBalancesToMigrate.mockResolvedValueOnce(

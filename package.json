@@ -1,7 +1,7 @@
 {
-  "name": "aave-paraswap-fee-claim-bot",
+  "name": "tokenlogic-automation",
   "version": "1.0.0",
-  "description": "Gelato Web3 Functions To Claim From Paraswap",
+  "description": "Repository containing automated bots using Gelato",
   "private": true,
   "scripts": {
     "build": "yarn clean && yarn install && yarn compile && npx tsc",

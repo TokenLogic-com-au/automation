@@ -95,7 +95,7 @@ describe("buildEncodedCalls", () => {
       1,
       reservesV3,
       configs,
-      { DEPOSITCALL_MIN_USD_THRESHOLD }
+      { depositCallMinUsdThreshold: DEPOSITCALL_MIN_USD_THRESHOLD }
     );
 
     expect(result).toEqual(
