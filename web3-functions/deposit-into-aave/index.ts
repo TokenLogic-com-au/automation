@@ -8,7 +8,7 @@ import { buildDepositCalls } from "./helpers/depositCalls";
 import { buildMigrationCalls } from "./helpers/migrationCalls";
 import { executeWithRole } from "./helpers/safe";
 import { AAVE_DATA_PROVIDER_V3_ABI, STEWARD_ABI } from "./abis";
-import { AAVE_ADDRESSES, SAFE_ADDRESS } from "./constants";
+import { AAVE_ADDRESSES } from "./constants";
 import { getV3ConfigsAndReserves } from "./helpers/getV3Configs";
 import { getMigrationParams } from "./helpers/migrationParams";
 import { getDepositCallParams } from "./helpers/depositCallsParams";
@@ -63,10 +63,10 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
 
   const privateKey = await secrets.get("PRIVATE_KEY");
 
-  if (!privateKey || !SAFE_ADDRESS) {
+  if (!privateKey) {
     return {
       canExec: false,
-      message: "🔑 Missing required secrets (PRIVATE_KEY, SAFE_ADDRESS)",
+      message: "🔑 Missing required PRIVATE_KEY",
     };
   }
 
@@ -74,6 +74,13 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
 
   const results = await Promise.allSettled(
     Object.entries(AAVE_ADDRESSES).map(async ([chainIdStr, addresses]) => {
+      if (!addresses.roles) {
+        return {
+          canExec: false,
+          message: "🔑 Missing required ROLES ADDRESS",
+        };
+      }
+
       const chainId = Number(chainIdStr);
 
       try {
@@ -81,11 +88,13 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
         const rpcUrl = await secrets.get(`RPC_URL_${networkKey}`);
 
         if (!rpcUrl) {
-          throw new Error(`Missing RPC URL for chain ${chainId}`);
+          return {
+            canExec: false,
+            message: `Missing RPC URL for chain ${chainId}`,
+          };
         }
 
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-
         const dataProviderContract = new Contract(
           addresses.dataProviderV3,
           AAVE_DATA_PROVIDER_V3_ABI,
@@ -120,13 +129,11 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
         const encodedCalls = [...depositCalls, ...migrationCalls];
 
         if (!encodedCalls.length) {
-          console.log(`ℹ️ No encoded or migration calls for chain ${chainId}`);
-          return;
+          return {
+            canExec: false,
+            message: `ℹ️ No encoded or migration calls for chain ${chainId}`,
+          };
         }
-
-        console.log(
-          `📦 Chain ${chainId}: ${depositCalls.length} deposits, ${migrationCalls.length} migrations`
-        );
 
         const multicallData = stewardInterface.encodeFunctionData("multicall", [
           encodedCalls,
@@ -136,22 +143,18 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
           chainId,
           provider,
           privateKey,
-          SAFE_ADDRESS,
+          addresses.roles,
           addresses.poolExposureSteward,
           multicallData
         );
 
         await storage.set("lastExecuted", Date.now().toString());
-
-        console.log(
-          `✅ Executed transaction on behalf of Safe on chain ${chainId}`
-        );
       } catch (error) {
-        console.error(
-          `❌ Error processing chain ${chainId}:`,
-          error instanceof Error ? error.message : error
-        );
-        throw error;
+        const msg = error instanceof Error ? error.message : error;
+        return {
+          canExec: false,
+          message: `${msg}`,
+        };
       }
     })
   );

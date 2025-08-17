@@ -1,6 +1,6 @@
-# Web3 Functions Template <!-- omit in toc -->
+# TokenLogic Gelato Automation
 
-Use this template to write, test and deploy Web3 Functions.
+Repository containing TokenLogic's bots for automating certain on-chain tasks. It uses Gelato infrastructure for running the functions.
 
 ## What are Web3 Functions?
 
@@ -57,29 +57,30 @@ cp .env.example .env
 
 ```
 ALCHEMY_ID=
-INFURA_ID=
 PRIVATE_KEY=
 ```
+
+Please note each sub-project also has its own .env as well as the root .env file.
 
 ## Hardhat Config
 
 In `hardhat.config.ts`, you can set up configurations for your Web3 Function runtime.
 
-  - `rootDir`: Directory which contains all web3 functions directories.
-  - `debug`: Run your web3 functions with debug mode on.
-  - `networks`: Provider of these networks will be injected into web3 function's multi chain provider.
+- `rootDir`: Directory which contains all web3 functions directories.
+- `debug`: Run your web3 functions with debug mode on.
+- `networks`: Provider of these networks will be injected into web3 function's multi chain provider.
 
 ```ts
   w3f: {
     rootDir: "./web3-functions",
     debug: false,
-    networks: ["ethereum", "sepolia", "polygon", "hardhat", "amoy"],
+    networks: ["ethereum", "polygon", "hardhat"],
   },
 ```
 
 ## Write a Web3 Function
 
-- Go to `web3-functions/index.ts`
+- Go to `web3-functions/<project_id>/index.ts`
 - Write your Web3 Function logic within the `Web3Function.onRun` function.
 - Example:
 
@@ -105,12 +106,10 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const oracleAddress = "0x71B9B0F6C999CBbB0FeF9c92B80D54e4973214da";
   const oracle = new Contract(oracleAddress, ORACLE_ABI, provider);
   const lastUpdated = parseInt(await oracle.lastUpdated());
-  console.log(`Last oracle update: ${lastUpdated}`);
 
   // Check if it's ready for a new update
   const nextUpdateTime = lastUpdated + 300; // 5 min
   const timestamp = (await provider.getBlock("latest")).timestamp;
-  console.log(`Next oracle update: ${nextUpdateTime}`);
   if (timestamp < nextUpdateTime) {
     return { canExec: false, message: `Time not elapsed` };
   }
@@ -124,12 +123,16 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     )
     .json();
   price = Math.floor(priceData[currency].usd);
-  console.log(`Updating price: ${price}`);
 
   // Return execution call data
   return {
     canExec: true,
-    callData: [{to: oracleAddress, data: oracle.interface.encodeFunctionData("updatePrice", [price])}],
+    callData: [
+      {
+        to: oracleAddress,
+        data: oracle.interface.encodeFunctionData("updatePrice", [price]),
+      },
+    ],
   };
 });
 ```
@@ -150,13 +153,12 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
 
 ### Calling your web3 function
 
-- Use `npx hardhat w3f-run W3FNAME` command to test your function (replace W3FNAME with the folder name containing your web3 function)
+- Use `npx hardhat w3f-run <project_id>` command to test your function (replace <project_id> with the folder name containing your web3 function)
 
 - Options:
 
   - `--logs` Show internal Web3 Function logs
   - `--debug` Show Runtime debug messages
-  - `--network [NETWORK]` Set the default runtime network & provider. 
 
 If your web3 function has arguments, you can define them in [`hardhat.config.ts`](./hardhat.config.ts).
 
@@ -188,7 +190,7 @@ Web3Function Runtime stats:
 ✓ Rpc calls: 2
 ```
 
-### Writing unit test for your web3 function
+### Writing unit tests for your web3 function
 
 - Define your tests in `test/index.test.ts`
 - Use `yarn test` command to run unit test suite.
@@ -229,7 +231,7 @@ const userArgs = {
 
 const storage = {};
 
-await oracleW3f.run({storage, userArgs});
+await oracleW3f.run({ storage, userArgs });
 ```
 
 `userArgs` and `storage` are optional here. When passed, it overrides the arguments defined in `userArgs.json` and `storage.json`.
@@ -270,7 +272,6 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   "currency": "ethereum",
   "oracle": "0x71B9B0F6C999CBbB0FeF9c92B80D54e4973214da"
 }
-
 ```
 
 ```
@@ -298,10 +299,8 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   // Use storage to retrieve previous state (stored values are always string)
   const lastBlockStr = (await storage.get("lastBlockNumber")) ?? "0";
   const lastBlock = parseInt(lastBlockStr);
-  console.log(`Last block: ${lastBlock}`);
 
   const newBlock = await provider.getBlockNumber();
-  console.log(`New block: ${newBlock}`);
   if (newBlock > lastBlock) {
     // Update storage to persist your current state (values must be cast to string)
     await storage.set("lastBlockNumber", newBlock.toString());
@@ -343,9 +342,10 @@ if (!coingeckoApi)
 
 3. Test your Web3 Function using secrets:<br/>
    `npx hardhat w3f-run secrets --logs`
+
 ## Deploy your Web3Function on IPFS
 
-Use `npx hardhat w3f-deploy W3FNAME` command to deploy your web3 function.
+Use `npx hardhat w3f-deploy <project_id>` command to deploy your web3 function.
 
 Example:<br/>
 `npx hardhat w3f-deploy oracle`
@@ -398,47 +398,3 @@ Creating automate task...
 Task created, taskId: 0x8438933eb9c6e4632d984b4db1e7672082d367b900e536f86295b2e23dbcaff3
 > https://beta.app.gelato.network/task/0x8438933eb9c6e4632d984b4db1e7672082d367b900e536f86295b2e23dbcaff3?chainId=5
 ```
-
-## More examples
-
-### Coingecko oracle
-
-Fetch price data from Coingecko API to update your on-chain Oracle
-
-Source: [`web3-functions/examples/oracle/index.ts`](./web3-functions/examples/oracle/index.ts)
-
-Run:<br/>
-`npx hardhat w3f-run oracle --logs`
-
-Create task: <br/>
-`yarn create-task:oracle`
-
-### Event listener
-
-Listen to smart contract events and use storage context to maintain your execution state.
-
-Source: [`web3-functions/examples/event-listener/index.ts`](./web3-functions/examples/event-listener/index.ts)
-
-Run:<br/>
-`npx hardhat w3f-run event --logs`
-
-### Secrets
-
-Fetch data from a private API to update your on-chain Oracle
-
-Source: [`web3-functions/examples/secrets/index.ts`](./web3-functions/examples/secrets/index.ts)
-
-Run:<br/>
-`npx hardhat w3f-run secrets --logs`
-
-### Advertising Board
-
-Fetch a random quote from an API and post it on chain.
-
-Source: [`web3-functions/examples/advertising-board/index.ts`](./web3-functions/examples/advertising-board/index.ts)
-
-Run:<br/>
-`npx hardhat w3f-run adboard`
-
-Create task: <br/>
-`yarn create-task:adboard`

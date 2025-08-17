@@ -6,7 +6,7 @@ export async function executeWithRole(
   chainId: number,
   provider: ethers.providers.Provider,
   privateKey: string,
-  rolesModifierAddress: string,
+  safeAddress: string,
   target: string,
   callData: string
 ): Promise<void> {
@@ -27,26 +27,17 @@ export async function executeWithRole(
 
   try {
     const tx = await wallet.sendTransaction({
-      to: rolesModifierAddress,
+      to: safeAddress,
       data: rolesData,
       value: 0,
     });
 
     await tx.wait();
-    console.log(
-      `✅ Executed with role on chain ${chainId} — Tx hash: ${tx.hash}`
-    );
   } catch (error) {
     if (error instanceof Error) {
-      console.error(
-        `❌ Error executing transaction on chain ${chainId}:`,
-        error.message
-      );
+      throw new Error(`❌ Error executing transaction on chain ${chainId}: ${error.message}`);
     } else {
-      console.error(
-        `❌ Error executing transaction on chain ${chainId}:`,
-        error
-      );
+      throw new Error(`❌ Error executing transaction on chain ${chainId}: ${error}`);
     }
   }
 }
