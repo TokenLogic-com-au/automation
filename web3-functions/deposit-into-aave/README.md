@@ -26,9 +26,10 @@ A more restrictive approach if this turned out to be dangerous for the DAO would
 ## Installation
 
 Ensure the following environment variables are set up as secrets in your Gelato Web3Function:
+
 1. PRIVATE_KEY: EOA with permission to execute the role
 2. SAFE_ADDRESS: The Gnosis Safe address with the Roles Modifier enabled
-3. RPC_URL_<NETWORK>: JSON-RPC URLs for each supported network (e.g., RPC_URL_OPTIMISM, RPC_URL_ETHEREUM, etc.)
+3. RPC*URL*<NETWORK>: JSON-RPC URLs for each supported network (e.g., RPC_URL_OPTIMISM, RPC_URL_ETHEREUM, etc.)
 4. DEPOSITCALL_MIN_USD_THRESHOLD: Minimum USD threshold for chain calls/deposits (in wei format)
 5. MIGRATION_MIN_USD_THRESHOLD: Minimum USD threshold for migration operations (in wei format)
 6. MAX_BPS: Maximum basis points for calculations (e.g., 10000 for 100%)

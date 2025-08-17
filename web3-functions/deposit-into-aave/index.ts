@@ -45,11 +45,10 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const lastExecuted = Number((await storage.get("lastExecuted")) ?? "0");
   const nextRun = lastExecuted + Number(userArgs.waitTimeUntilNextRun);
   if (Date.now() < nextRun) {
-
-    const nextRunStr = new Date(nextRun).toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
+    const nextRunStr = new Date(nextRun).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
     });
 
     return {

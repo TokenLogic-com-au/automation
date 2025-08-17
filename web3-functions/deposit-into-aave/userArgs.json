@@ -1,7 +1,7 @@
 {
-    "migrationMinUsdThreshold": 5000,
-    "maxBps": 10000,
-    "migrationBps": 9000,
-    "depositCallMinUsdThreshold": 1000,
-    "waitTimeUntilNextRun": 864000000
-  }
+  "migrationMinUsdThreshold": 5000,
+  "maxBps": 10000,
+  "migrationBps": 9000,
+  "depositCallMinUsdThreshold": 1000,
+  "waitTimeUntilNextRun": 864000000
+}
