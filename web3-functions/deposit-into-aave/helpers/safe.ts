@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { ROLES_MODIFIER_ABI } from "../abis";
-import { ROLE_KEY as roleKey } from "../constants";
+import { ROLE_KEY_AAVE_DEPOSITOR as roleKey } from "../constants";
 
 export async function executeWithRole(
   chainId: number,
