@@ -82,10 +82,10 @@ export const AAVE_ADDRESSES: Record<number, AaveAddress> = {
     roles: "0xBA25175FD3da510Ad9B1f550eA211A230Ca5F80d",
     // https://basescan.org/address/0x4f1F3E32f20847a4c9F002882eB607aD750b6115
     poolExposureSteward: "0x4f1F3E32f20847a4c9F002882eB607aD750b6115",
-    // https://basescan.org/address/0xC4Fcf9893072d61Cc2899C0054877Cb752587981
-    dataProviderV3: "0xC4Fcf9893072d61Cc2899C0054877Cb752587981",
-    // https://basescan.org/address/0x464C71f6c2F760DdA6093dCB91C24c39e5d6e18c
-    collector: "0x464C71f6c2F760DdA6093dCB91C24c39e5d6e18c",
+    // https://basescan.org/address/0x0F43731EB8d45A581f4a36DD74F5f358bc90C73A
+    dataProviderV3: "0x0F43731EB8d45A581f4a36DD74F5f358bc90C73A",
+    // https://basescan.org/address/0xBA9424d650A4F5c80a0dA641254d1AcCE2A37057
+    collector: "0xBA9424d650A4F5c80a0dA641254d1AcCE2A37057",
     // https://basescan.org/address/0x2Cc0Fc26eD4563A5ce5e8bdcfe1A2878676Ae156
     priceOracle: "0x2Cc0Fc26eD4563A5ce5e8bdcfe1A2878676Ae156",
     // https://basescan.org/address/0xA238Dd80C259a72e81d7e4664a9801593F98d1c5
