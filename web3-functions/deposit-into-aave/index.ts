@@ -17,7 +17,7 @@ import { sendTelegramAlert } from "./helpers/sendTelegramAlert";
 type NetworkKey =
   | "ETHEREUM"
   | "POLYGON"
-  | "ARBITRUM"
+  | "ARBITRUMONE"
   | "OPTIMISM"
   | "BASE"
   | "AVALANCHE";
@@ -26,7 +26,7 @@ const getNetworkKey = (chainId: number): NetworkKey => {
   const networkMap: Record<number, NetworkKey> = {
     1: "ETHEREUM",
     137: "POLYGON",
-    42161: "ARBITRUM",
+    42161: "ARBITRUMONE",
     10: "OPTIMISM",
     8453: "BASE",
     43114: "AVALANCHE",
@@ -40,55 +40,49 @@ const getNetworkKey = (chainId: number): NetworkKey => {
   return network;
 };
 
+const MAX_GELATO_RUNTIME = 30;
+
 Web3Function.onRun(async (context: Web3FunctionContext) => {
   const { userArgs, secrets, storage } = context;
-
   const start = Date.now();
 
   try {
     const lastExecuted = Number((await storage.get("lastExecuted")) ?? "0");
     const nextRun = lastExecuted + Number(userArgs.waitTimeUntilNextRun);
-    if (Date.now() < nextRun) {
+    if (start < nextRun) {
       const nextRunStr = new Date(nextRun).toLocaleDateString("en-US", {
         month: "long",
         day: "numeric",
         year: "numeric",
       });
+
       return {
         canExec: false,
-        message: `Wait time until next run has not passed. Next run on ${nextRunStr}`,
+        message: `Wait time until next run has not passed. Next run on ${nextRunStr}.`,
       };
     }
-
-    const migrationParams = await getMigrationParams(userArgs);
-    const depositCallParams = await getDepositCallParams(userArgs);
 
     const privateKey = await secrets.get("PRIVATE_KEY");
     if (!privateKey) {
       return { canExec: false, message: "Missing required PRIVATE_KEY" };
     }
 
-    const targetChainIdStr = await secrets.get("TARGET_CHAIN_ID");
-    if (!targetChainIdStr) {
-      return { canExec: false, message: "Missing required TARGET_CHAIN_ID" };
+    const chainId = Number(await secrets.get("CHAIN_ID"));
+    if (!chainId) {
+      return { canExec: false, message: "Missing required CHAIN_ID" };
     }
 
-    const chainId = Number(targetChainIdStr);
-    const addresses = AAVE_ADDRESSES[chainId];
-    if (!addresses || !addresses.roles) {
-      return { canExec: false, message: `Unsupported chain ${chainId}` };
-    }
-
-    const stewardInterface = new ethers.utils.Interface(STEWARD_ABI);
-    const networkKey = getNetworkKey(chainId);
-
-    const rpcUrl = await secrets.get(`RPC_URL_${networkKey}`);
-    
+    const rpcUrl = await secrets.get(`RPC_URL_${getNetworkKey(chainId)}`);
     if (!rpcUrl) {
       return {
         canExec: false,
         message: `Missing RPC URL for chain ${chainId}`,
       };
+    }
+
+    const addresses = AAVE_ADDRESSES[chainId];
+    if (!addresses || !addresses.roles) {
+      return { canExec: false, message: `Unsupported chain ${chainId}` };
     }
 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
@@ -101,6 +95,10 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     const { reserves: reservesV3, configs } = await getV3ConfigsAndReserves(
       dataProviderContract
     );
+
+    const stewardInterface = new ethers.utils.Interface(STEWARD_ABI);
+    const migrationParams = await getMigrationParams(userArgs);
+    const depositCallParams = await getDepositCallParams(userArgs);
 
     const [depositCalls, migrationCalls] = await Promise.all([
       buildDepositCalls(
@@ -128,7 +126,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     if (!encodedCalls.length) {
       return {
         canExec: false,
-        message: `No encoded or migration calls for chain ${chainId}`,
+        message: `No deposit or migration calls for chainId: ${chainId} at this time`,
       };
     }
 
@@ -146,30 +144,27 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     );
 
     await storage.set("lastExecuted", Date.now().toString());
-    
-    const end = Date.now();
-    const duration = (end - start) / 1000;
 
-    console.log(`Duration: ${duration}s`);
+    const duration = (Date.now() - start) / 1000;
+    console.log(`Script Duration: ${duration} seconds.`);
 
-    const TELEGRAM_BOT_TOKEN = await secrets.get("TELEGRAM_BOT_TOKEN");
-    const TELEGRAM_CHAT_ID = await secrets.get("TELEGRAM_CHAT_ID");
-    const ALERT_THRESHOLD = Number(
-      (await secrets.get("ALERT_THRESHOLD")) ?? "30"
-    );
+    if (duration > MAX_GELATO_RUNTIME) {
+      const TELEGRAM_BOT_TOKEN = await secrets.get("TELEGRAM_BOT_TOKEN");
+      const TELEGRAM_CHAT_ID = await secrets.get("TELEGRAM_CHAT_ID");
 
-    if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID && duration > ALERT_THRESHOLD) {
-      await sendTelegramAlert(
-        TELEGRAM_BOT_TOKEN,
-        TELEGRAM_CHAT_ID,
-        chainId,
-        duration
-      );
+      if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
+        await sendTelegramAlert(
+          TELEGRAM_BOT_TOKEN,
+          TELEGRAM_CHAT_ID,
+          chainId,
+          duration
+        );
+      }
     }
 
     return {
       canExec: false,
-      message: `Execution finished — chain ${chainId} (took ${duration}s)`,
+      message: `Execution finished for chainId: ${chainId}. Runtime: ${duration} seconds.`,
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
