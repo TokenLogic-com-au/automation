@@ -5,7 +5,6 @@ import {
 import { Contract } from "@ethersproject/contracts";
 import { GelatoRelay } from "@gelatonetwork/relay-sdk";
 
-
 const MIN_FEE_THRESHOLD_WEI = 100_000_000_000_000_000_000n;
 
 type GSMAbiInput = {
@@ -14,7 +13,7 @@ type GSMAbiInput = {
   outputs?: Array<{ internalType: string; name: string; type: string }>;
   stateMutability: string;
   type: string;
-}
+};
 
 const AAVE_GSM_ABI: GSMAbiInput[] = [
   {
@@ -38,17 +37,32 @@ const gelatoRelay = new GelatoRelay();
 Web3Function.onRun(async (context: Web3FunctionContext) => {
   const { userArgs, multiChainProvider, secrets, storage } = context;
 
-  if (!userArgs.gsms || !Array.isArray(userArgs.gsms) || !userArgs.duration || typeof userArgs.duration !== 'number') {
-    return { canExec: false, message: "Invalid user arguments. Required: gsms (string[]) and duration (number)" };
+  if (
+    !userArgs.gsms ||
+    !Array.isArray(userArgs.gsms) ||
+    !userArgs.duration ||
+    typeof userArgs.duration !== "number"
+  ) {
+    return {
+      canExec: false,
+      message:
+        "Invalid user arguments. Required: gsms (string[]) and duration (number)",
+    };
   }
 
-  if (!userArgs.gsms.every((gsm): gsm is string => typeof gsm === 'string')) {
-    return { canExec: false, message: "Invalid GSM format. All GSM entries must be strings in format 'chainId:address'" };
+  if (!userArgs.gsms.every((gsm): gsm is string => typeof gsm === "string")) {
+    return {
+      canExec: false,
+      message:
+        "Invalid GSM format. All GSM entries must be strings in format 'chainId:address'",
+    };
   }
 
   const { gsms, duration } = userArgs;
 
-  const lastExecutionTime = Number((await storage.get("lastExecutionTime")) ?? "0");
+  const lastExecutionTime = Number(
+    (await storage.get("lastExecutionTime")) ?? "0"
+  );
   const currentTimestamp = Date.now();
 
   const gelatoApiKey = await secrets.get("RELAY_API_KEY");
@@ -57,11 +71,14 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   }
 
   if (currentTimestamp < lastExecutionTime + duration) {
-    return { canExec: false, message: "Minimum duration between claims not reached" };
+    return {
+      canExec: false,
+      message: "Minimum duration between claims not reached",
+    };
   }
 
   let anyExecuted = false;
-  
+
   for (const gsm of gsms) {
     const [targetChainId, gsmContractAddress] = gsm.split(":");
     if (!targetChainId || !gsmContractAddress) {
@@ -76,7 +93,9 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     );
 
     const accruedFees = await gsmContract.getAccruedFees();
-    console.log(`Chain ${targetChainId}, GSM ${gsmContractAddress}, Accrued Fees: ${accruedFees}`);
+    console.log(
+      `Chain ${targetChainId}, GSM ${gsmContractAddress}, Accrued Fees: ${accruedFees}`
+    );
 
     if (accruedFees < MIN_FEE_THRESHOLD_WEI) {
       console.log(`Skipping GSM ${gsmContractAddress} - fees below threshold`);
@@ -88,18 +107,26 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
         {
           chainId: BigInt(targetChainId),
           target: gsmContractAddress,
-          data: gsmContract.interface.encodeFunctionData("distributeFeesToTreasury", []),
+          data: gsmContract.interface.encodeFunctionData(
+            "distributeFeesToTreasury",
+            []
+          ),
         },
         gelatoApiKey
       );
       anyExecuted = true;
-      console.log(`Successfully distributed fees for GSM ${gsmContractAddress}`);
+      console.log(
+        `Successfully distributed fees for GSM ${gsmContractAddress}`
+      );
     } catch (error) {
-      console.error(`Error distributing fees for GSM ${gsmContractAddress}:`, error);
+      console.error(
+        `Error distributing fees for GSM ${gsmContractAddress}:`,
+        error
+      );
     }
   }
 
-  await new Promise((res) => setTimeout(res, 2000)); 
+  await new Promise((res) => setTimeout(res, 2000));
 
   if (anyExecuted) {
     await storage.set("lastExecutionTime", currentTimestamp.toString());
@@ -107,6 +134,8 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
 
   return {
     canExec: false,
-    message: anyExecuted ? "Fee distribution completed successfully" : "No GSMs met the threshold for fee distribution",
+    message: anyExecuted
+      ? "Fee distribution completed successfully"
+      : "No GSMs met the threshold for fee distribution",
   };
 });

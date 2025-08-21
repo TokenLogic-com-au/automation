@@ -18,3 +18,9 @@ yarn-error.log*
 # Build output
 dist/
 build/
+
+# Temporary files
+.tmp/
+
+# Cache files
+cache/
